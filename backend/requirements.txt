@@ -1,0 +1,7 @@
+fastapi
+sqlalchemy
+python-dotenv
+uvicorn
+firebase-admin
+pydantic[email]
+
