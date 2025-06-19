@@ -7,3 +7,6 @@ __pycache__/
 
 # Ignore environment variable file (you’ll add this later)
 .env
+
+# Firebase credentials
+*.json
