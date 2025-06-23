@@ -1,12 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import engine
+from app.database import engine, check_database_connection
 from app.models import user, invitation, activity_log
-
-# Create database tables
-user.Base.metadata.create_all(bind=engine)
-invitation.Base.metadata.create_all(bind=engine)
-activity_log.Base.metadata.create_all(bind=engine)
+import os
 
 app = FastAPI(title="Chemical Inventory API", version="1.0.0")
 
@@ -18,6 +14,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Create database tables on startup"""
+    try:
+        # Create all tables
+        user.Base.metadata.create_all(bind=engine)
+        invitation.Base.metadata.create_all(bind=engine)
+        activity_log.Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully!")
+        
+        # Check database connection
+        if check_database_connection():
+            print("✅ Database connection verified!")
+        else:
+            print("❌ Database connection failed!")
+            
+    except Exception as e:
+        print(f"❌ Error creating database tables: {e}")
+        raise
 
 # Include routers
 from app.routers.auth import router as auth_router
@@ -34,4 +50,10 @@ def root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    """Enhanced health check with database status"""
+    db_status = check_database_connection()
+    return {
+        "status": "healthy" if db_status else "unhealthy",
+        "database": "connected" if db_status else "disconnected",
+        "tables": ["users", "invitations", "activity_logs"]
+    }

@@ -1,0 +1,82 @@
+.dashboardContainer {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 2rem 2.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+}
+
+.userInfo {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  display: flex;
+  gap: 2rem;
+}
+
+.chemicalInventoryBox {
+  background: #f1f8e9;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.adminBox {
+  background: #e3f2fd;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.adminBtn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+  &:hover {
+    background: #1565c0;
+  }
+}
+
+.permissionsBox {
+  background: #fffde7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.actionsBox {
+  background: #e3f2fd;
+  padding: 1rem;
+  border-radius: 8px;
+  min-height: 80px;
+}
+
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logoutBtn {
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #b71c1c;
+  }
+} 

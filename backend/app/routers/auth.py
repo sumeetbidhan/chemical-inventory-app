@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud.user import get_user_by_uid, create_user, get_user_by_email
+from app.crud.user import get_user_by_uid, create_user, get_user_by_email, get_admin_user
 from app.crud.invitation import get_invitation_by_email, accept_invitation
 from app.crud.activity_log import create_activity_log
 from app.schema.user import UserLogin, UserLoginResponse, UserCreate
@@ -101,3 +101,18 @@ async def get_current_user_info(
 ):
     """Get current user information"""
     return current_user
+
+@router.post("/register")
+def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    # Prevent multiple admins
+    if user.role == UserRole.ADMIN:
+        if get_admin_user(db):
+            raise HTTPException(status_code=400, detail="Admin already exists")
+    # Prevent duplicate emails
+    if get_user_by_email(db, user.email):
+        raise HTTPException(status_code=400, detail="User already exists")
+    # Create user as pending approval (except admin, who is auto-approved)
+    db_user = create_user(db, user)
+    db_user.is_approved = user.role == UserRole.ADMIN
+    db.commit()
+    return {"message": "User registered", "is_approved": db_user.is_approved}
