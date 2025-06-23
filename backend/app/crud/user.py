@@ -53,7 +53,7 @@ def get_pending_users(db: Session) -> List[User]:
     return db.query(User).filter(User.is_approved == False).all()
 
 def get_users_by_role(db: Session, role: UserRole) -> List[User]:
-    return db.query(User).filter(User.role == role).all()
+    return db.query(User).filter(User.role == role).all()                                                                                                                                                                                                     
 
 def get_admin_user(db: Session) -> Optional[User]:
     return db.query(User).filter(User.role == UserRole.ADMIN).first()
