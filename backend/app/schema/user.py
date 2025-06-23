@@ -6,9 +6,10 @@ from app.models.user import UserRole
 class UserBase(BaseModel):
     email: EmailStr
     role: UserRole
+    phone: Optional[str] = None
 
 class UserCreate(UserBase):
-    uid: str
+    password: str
 
 class UserUpdate(BaseModel):
     role: Optional[UserRole] = None
@@ -16,7 +17,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    uid: str
+    uid: Optional[str]
     is_approved: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

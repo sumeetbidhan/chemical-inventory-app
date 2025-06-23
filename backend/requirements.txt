@@ -5,3 +5,4 @@ uvicorn
 firebase-admin
 pydantic[email]
 
+psycopg2-binary
