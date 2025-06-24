@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import styles from './LoginPage.module.scss';
+import { useTheme } from '../context/ThemeContext';
 
 const LoginPage = () => {
   const [firebaseToken, setFirebaseToken] = useState('');
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,7 +32,16 @@ const LoginPage = () => {
 
   return (
     <div className={styles.loginContainer}>
-      <h2>Chemical Inventory Login</h2>
+      <div className={styles.headerBar}>
+        <div className={styles.branding}>
+          <img src="/company_icon.png" alt="Company Icon" className={styles.companyIcon} />
+          <span className={styles.companyTitle}>Blossoms Aroma</span>
+        </div>
+        <button onClick={toggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          {theme === 'dark' ? '🌙' : '☀️'}
+        </button>
+      </div>
+      <h2 style={{ color: 'var(--primary-text)' }}>Chemical Inventory Login</h2>
       <form onSubmit={handleLogin} className={styles.loginForm}>
         <label htmlFor="firebaseToken">Firebase Token</label>
         <textarea

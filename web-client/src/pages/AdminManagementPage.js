@@ -3,7 +3,7 @@ import styles from './AdminManagementPage.module.scss';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const TABS = ['Users', 'Invite', 'Pending', 'Logs'];
+const TABS = ['Users', 'Product Team', 'Account Team', 'Invite', 'Pending', 'Logs'];
 
 const API_BASE = 'http://localhost:8000';
 
@@ -68,6 +68,8 @@ const AdminManagementPage = () => {
   useEffect(() => {
     if (!user || role !== 'admin') return;
     if (activeTab === 'Users') fetchUsers();
+    if (activeTab === 'Product Team') fetchUsers(); // Same as users but filtered
+    if (activeTab === 'Account Team') fetchUsers(); // Same as users but filtered
     if (activeTab === 'Pending') fetchPendingUsers();
     if (activeTab === 'Logs') fetchLogs();
     // eslint-disable-next-line
@@ -174,7 +176,7 @@ const AdminManagementPage = () => {
     try {
       const res = await fetch(`${API_BASE}/admin/invite`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ email: inviteEmail, role: inviteRole })
       });
       if (!res.ok) {
@@ -190,6 +192,10 @@ const AdminManagementPage = () => {
       setInviteLoading(false);
     }
   };
+
+  // Filter users for different tabs
+  const productTeamUsers = users.filter(user => user.role === 'product');
+  const accountTeamUsers = users.filter(user => user.role === 'account');
 
   if (loading || roleLoading) {
     return <div className={styles.adminPageContainer}>Loading...</div>;
@@ -215,7 +221,7 @@ const AdminManagementPage = () => {
       <div className={styles.tabContent}>
         {activeTab === 'Users' && (
           <div>
-            <h3>User List</h3>
+            <h3>User List ({users.length} users)</h3>
             {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
             {!loadingUsers && !error && (
@@ -232,9 +238,9 @@ const AdminManagementPage = () => {
                 <tbody>
                   {users.map(user => (
                     <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td>{user.email}</td>
-                      <td>
+                      <td data-label="ID">{user.id}</td>
+                      <td data-label="Email">{user.email}</td>
+                      <td data-label="Role">
                         <select
                           value={user.role}
                           onChange={e => handleRoleChange(user.id, e.target.value)}
@@ -246,8 +252,8 @@ const AdminManagementPage = () => {
                           <option value="all_users">All Users</option>
                         </select>
                       </td>
-                      <td>{user.is_approved ? 'Approved' : 'Pending'}</td>
-                      <td>
+                      <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
+                      <td data-label="Actions">
                         {!user.is_approved && (
                           <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
                             Approve
@@ -264,9 +270,106 @@ const AdminManagementPage = () => {
             )}
           </div>
         )}
+        {activeTab === 'Product Team' && (
+          <div>
+            <h3>Product Team ({productTeamUsers.length} members)</h3>
+            <p>Manage product team members who can add and modify chemical inventory data.</p>
+            {loadingUsers && <div>Loading product team...</div>}
+            {error && <div className={styles.errorMsg}>{error}</div>}
+            {!loadingUsers && !error && (
+              <>
+                {productTeamUsers.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <h4>No Product Team Members</h4>
+                    <p>No users with "Product" role found. Use the "Invite" tab to add product team members.</p>
+                  </div>
+                ) : (
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {productTeamUsers.map(user => (
+                        <tr key={user.id}>
+                          <td data-label="ID">{user.id}</td>
+                          <td data-label="Email">{user.email}</td>
+                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
+                          <td data-label="Actions">
+                            {!user.is_approved && (
+                              <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
+                                Approve
+                              </button>
+                            )}
+                            <button onClick={() => handleDelete(user.id)} className={styles.actionBtnDanger}>
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
+            )}
+          </div>
+        )}
+        {activeTab === 'Account Team' && (
+          <div>
+            <h3>Account Team ({accountTeamUsers.length} members)</h3>
+            <p>Manage account team members who handle financial transactions and purchase orders.</p>
+            {loadingUsers && <div>Loading account team...</div>}
+            {error && <div className={styles.errorMsg}>{error}</div>}
+            {!loadingUsers && !error && (
+              <>
+                {accountTeamUsers.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <h4>No Account Team Members</h4>
+                    <p>No users with "Account" role found. Use the "Invite" tab to add account team members.</p>
+                  </div>
+                ) : (
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {accountTeamUsers.map(user => (
+                        <tr key={user.id}>
+                          <td data-label="ID">{user.id}</td>
+                          <td data-label="Email">{user.email}</td>
+                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
+                          <td data-label="Actions">
+                            {!user.is_approved && (
+                              <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
+                                Approve
+                              </button>
+                            )}
+                            <button onClick={() => handleDelete(user.id)} className={styles.actionBtnDanger}>
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
+            )}
+          </div>
+        )}
         {activeTab === 'Invite' && (
           <div>
             <h3>Invite User</h3>
+            <p>Send invitations to new users. They will receive an email to register.</p>
             <form onSubmit={handleInvite} className={styles.inviteForm}>
               <label htmlFor="inviteEmail">Email</label>
               <input
@@ -276,6 +379,7 @@ const AdminManagementPage = () => {
                 onChange={e => setInviteEmail(e.target.value)}
                 className={styles.input}
                 required
+                placeholder="Enter email address"
               />
               <label htmlFor="inviteRole">Role</label>
               <select
@@ -286,12 +390,12 @@ const AdminManagementPage = () => {
               >
                 <option value="admin">Admin</option>
                 <option value="lab_staff">Lab Staff</option>
-                <option value="product">Product</option>
-                <option value="account">Account</option>
+                <option value="product">Product Team</option>
+                <option value="account">Account Team</option>
                 <option value="all_users">All Users</option>
               </select>
               <button type="submit" className={styles.actionBtn} disabled={inviteLoading}>
-                {inviteLoading ? 'Inviting...' : 'Invite'}
+                {inviteLoading ? 'Inviting...' : 'Send Invitation'}
               </button>
             </form>
             {inviteError && <div className={styles.errorMsg}>{inviteError}</div>}
@@ -300,64 +404,84 @@ const AdminManagementPage = () => {
         )}
         {activeTab === 'Pending' && (
           <div>
-            <h3>Pending Approvals</h3>
+            <h3>Pending Approvals ({pendingUsers.length} users)</h3>
+            <p>Users waiting for admin approval to access the system.</p>
             {pendingLoading && <div>Loading pending users...</div>}
             {pendingError && <div className={styles.errorMsg}>{pendingError}</div>}
             {!pendingLoading && !pendingError && (
-              <table className={styles.userTable}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingUsers.map(user => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td>{user.email}</td>
-                      <td>{user.role}</td>
-                      <td>
-                        <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>Approve</button>
-                        <button onClick={() => handleReject(user.id)} className={styles.actionBtnDanger}>Reject</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                {pendingUsers.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <h4>No Pending Approvals</h4>
+                    <p>All users have been approved or there are no new registrations.</p>
+                  </div>
+                ) : (
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingUsers.map(user => (
+                        <tr key={user.id}>
+                          <td data-label="ID">{user.id}</td>
+                          <td data-label="Email">{user.email}</td>
+                          <td data-label="Role">{user.role}</td>
+                          <td data-label="Actions">
+                            <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>Approve</button>
+                            <button onClick={() => handleReject(user.id)} className={styles.actionBtnDanger}>Reject</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
             )}
           </div>
         )}
         {activeTab === 'Logs' && (
           <div>
-            <h3>Activity Logs</h3>
+            <h3>Activity Logs ({logs.length} entries)</h3>
+            <p>System activity and user actions log.</p>
             {logsLoading && <div>Loading logs...</div>}
             {logsError && <div className={styles.errorMsg}>{logsError}</div>}
             {!logsLoading && !logsError && (
-              <table className={styles.userTable}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>User ID</th>
-                    <th>Action</th>
-                    <th>Description</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map(log => (
-                    <tr key={log.id}>
-                      <td>{log.id}</td>
-                      <td>{log.user_id}</td>
-                      <td>{log.action}</td>
-                      <td>{log.description}</td>
-                      <td>{log.timestamp}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                {logs.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <h4>No Activity Logs</h4>
+                    <p>No activity has been logged yet.</p>
+                  </div>
+                ) : (
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>User ID</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {logs.map(log => (
+                        <tr key={log.id}>
+                          <td data-label="ID">{log.id}</td>
+                          <td data-label="User ID">{log.user_id}</td>
+                          <td data-label="Action">{log.action}</td>
+                          <td data-label="Description">{log.description}</td>
+                          <td data-label="Timestamp">{new Date(log.timestamp).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
             )}
           </div>
         )}

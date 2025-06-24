@@ -6,12 +6,10 @@ import { useNavigate } from 'react-router-dom';
 const API_BASE = 'http://localhost:8000';
 
 const DashboardPage = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, userInfo, backendAvailable } = useAuth();
   const navigate = useNavigate();
-  const [userInfo, setUserInfo] = useState(null);
   const [pending, setPending] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [chemicals, setChemicals] = useState([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -20,41 +18,92 @@ const DashboardPage = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      if (!user) return;
-      setFetching(true);
-      try {
-        const res = await fetch(`${API_BASE}/user/me`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('firebase_token')}` }
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Failed to fetch user info');
-        setUserInfo(data);
-        setPending(!data.is_approved);
-      } catch (err) {
-        setUserInfo(null);
-        setPending(true);
-      } finally {
-        setFetching(false);
-      }
-    };
-    fetchUserInfo();
-  }, [user]);
-
-  useEffect(() => {
-    fetch('http://localhost:8000/chemicals')
-      .then(res => res.json())
-      .then(data => setChemicals(data));
-  }, []);
+    if (userInfo) {
+      setPending(!userInfo.is_approved);
+      setFetching(false);
+    }
+  }, [userInfo]);
 
   if (loading || fetching) return <div className={styles.dashboardContainer}>Loading...</div>;
   if (!user) return null;
+  
+  // Show backend connection warning if backend is not available
+  if (!backendAvailable) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <div style={{ 
+          background: 'var(--warning-color)', 
+          border: '1px solid var(--warning-color)', 
+          borderRadius: '8px', 
+          padding: '16px', 
+          marginBottom: '24px',
+          color: 'white',
+          opacity: 0.9
+        }}>
+          <strong>⚠️ Backend Connection Warning:</strong> The backend server appears to be offline. 
+          Some features may not work properly. Please ensure the backend server is running.
+        </div>
+        
+        <div className={styles.dashboardHeader}>
+          <h2>Welcome, {user.email}</h2>
+        </div>
+        <div className={styles.userInfo}>
+          <div>
+            <strong>User ID</strong>
+            <span>{user.uid}</span>
+          </div>
+          <div>
+            <strong>Email Address</strong>
+            <span>{user.email}</span>
+          </div>
+          <div>
+            <strong>Email Verified</strong>
+            <span>{user.emailVerified ? 'Yes' : 'No'}</span>
+          </div>
+          <div>
+            <strong>Backend Status</strong>
+            <span style={{ color: 'var(--error-color)' }}>Offline</span>
+          </div>
+        </div>
+        
+        <div className={styles.quickAccessBox}>
+          <button className={styles.bigButton} onClick={() => navigate('/chemicals')}>
+            Go to Chemical Inventory
+          </button>
+        </div>
+        
+        <div className={styles.permissionsBox}>
+          <h4>Limited Mode</h4>
+          <ul>
+            <li>View inventory (if cached)</li>
+            <li>Basic navigation</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+  
   if (pending) {
     return (
       <div className={styles.dashboardContainer}>
-        <h2>Approval Pending</h2>
-        <p>Your account is pending admin approval. Please wait for approval before accessing the dashboard.</p>
-        <button onClick={logout} className={styles.logoutBtn}>Logout</button>
+        <div className={styles.dashboardHeader}>
+          <h2>Approval Pending</h2>
+        </div>
+        <div style={{ 
+          background: 'var(--warning-color)', 
+          color: 'white', 
+          padding: '24px', 
+          borderRadius: '12px',
+          textAlign: 'center',
+          opacity: 0.9
+        }}>
+          <p style={{ fontSize: '18px', margin: '0 0 16px 0' }}>
+            Your account is pending admin approval. Please wait for approval before accessing the dashboard.
+          </p>
+          <p style={{ fontSize: '14px', margin: 0, opacity: 0.8 }}>
+            You will be notified once your account has been approved.
+          </p>
+        </div>
       </div>
     );
   }
@@ -65,43 +114,21 @@ const DashboardPage = () => {
     const { role } = userInfo;
     return (
       <>
-        <div className={styles.chemicalInventoryBox}>
-          <h3>Chemical Inventory Dashboard</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>CAS Number</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(Array.isArray(chemicals) ? chemicals : []).map(chem => (
-                <tr key={chem.id}>
-                  <td>{chem.name}</td>
-                  <td>{chem.cas_number}</td>
-                  <td>{chem.quantity}</td>
-                  <td>{chem.unit}</td>
-                  <td>{chem.location}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className={styles.quickAccessBox}>
+          <button className={styles.bigButton} onClick={() => navigate('/chemicals')}>
+            Chemical Inventory
+          </button>
+          {role === 'admin' && (
+            <button className={styles.bigButton} onClick={() => navigate('/admin')}>
+              Admin Management
+            </button>
+          )}
+          {role === 'account' && (
+            <button className={styles.bigButton} onClick={() => navigate('/account')}>
+              Account Team
+            </button>
+          )}
         </div>
-        {role === 'admin' && (
-          <div className={styles.adminBox}>
-            <h3>Admin Management</h3>
-            <button onClick={() => navigate('/admin')} className={styles.adminBtn}>Go to Admin Dashboard</button>
-            <ul>
-              <li>Approve or reject new users</li>
-              <li>Manage user roles</li>
-              <li>View system activity logs</li>
-              <li>Invite new users</li>
-            </ul>
-          </div>
-        )}
         <div className={styles.permissionsBox}>
           <h4>Your Permissions</h4>
           <ul>
@@ -145,14 +172,33 @@ const DashboardPage = () => {
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
-        <h2>Welcome, {userInfo?.email}</h2>
-        <button onClick={logout} className={styles.logoutBtn}>Logout</button>
+        <h2>Welcome, {userInfo?.email || user.email}</h2>
       </div>
       <div className={styles.userInfo}>
-        <div><strong>UID:</strong> {userInfo?.uid}</div>
-        <div><strong>Email:</strong> {userInfo?.email}</div>
-        <div><strong>Role:</strong> {userInfo?.role}</div>
-        <div><strong>Email Verified:</strong> {user.emailVerified ? 'Yes' : 'No'}</div>
+        <div>
+          <strong>User ID</strong>
+          <span>{userInfo?.uid || user.uid}</span>
+        </div>
+        <div>
+          <strong>Email Address</strong>
+          <span>{userInfo?.email || user.email}</span>
+        </div>
+        <div>
+          <strong>User Role</strong>
+          <span>{(userInfo?.role || 'Basic User').replace('_', ' ').toUpperCase()}</span>
+        </div>
+        <div>
+          <strong>Email Verified</strong>
+          <span>{user.emailVerified ? 'Yes' : 'No'}</span>
+        </div>
+        <div>
+          <strong>Backend Status</strong>
+          <span style={{ color: 'var(--success-color)' }}>Online</span>
+        </div>
+        <div>
+          <strong>Account Status</strong>
+          <span style={{ color: 'var(--success-color)' }}>Active</span>
+        </div>
       </div>
       {renderDashboardContent()}
     </div>

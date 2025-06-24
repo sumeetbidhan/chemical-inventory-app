@@ -1,0 +1,398 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+
+  h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.editBtn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #0056b3;
+  }
+}
+
+.deleteBtn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #c82333;
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.infoSection {
+  margin-bottom: 30px;
+}
+
+.infoSection h4 {
+  color: #2c3e50;
+  font-size: 18px;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+  }
+
+  span {
+    color: #6c757d;
+    font-size: 14px;
+  }
+}
+
+.formulationSection {
+  margin-bottom: 20px;
+
+  h5 {
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+}
+
+.formulationText {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #495057;
+}
+
+.notesSection {
+  margin-bottom: 30px;
+
+  h5 {
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+}
+
+.notesText {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.noteLine {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #495057;
+  margin-bottom: 4px;
+  padding: 4px 0;
+  border-bottom: 1px solid #e9ecef;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.noNotes {
+  color: #6c757d;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.addNoteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.noteInput {
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+}
+
+.addNoteBtn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  align-self: flex-start;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #218838;
+  }
+}
+
+.formulationsSection {
+  h4 {
+    color: #2c3e50;
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ecef;
+  }
+}
+
+.formulationsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.addFormulationBtn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #218838;
+  }
+}
+
+.formulationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formulationCard {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.formulationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.formulationActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editFormulationBtn {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #e0a800;
+  }
+}
+
+.deleteFormulationBtn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #c82333;
+  }
+}
+
+.formulationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formulationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.formulationItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 12px;
+  }
+
+  span {
+    color: #6c757d;
+    font-size: 14px;
+  }
+}
+
+.formulationNotes {
+  margin-top: 10px;
+
+  h6 {
+    color: #2c3e50;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+}
+
+.formulationNotesText {
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.addFormulationNoteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.formulationNoteInput {
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 40px;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+}
+
+.addFormulationNoteBtn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  align-self: flex-start;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #138496;
+  }
+}
+
+.noFormulations {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+
+  p {
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
+}
+
+.addFirstFormulationBtn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #218838;
+  }
+} 
