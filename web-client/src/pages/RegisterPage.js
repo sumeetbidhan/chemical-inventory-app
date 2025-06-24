@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import styles from './RegisterPage.module.scss';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -34,7 +36,20 @@ const RegisterPage = () => {
 
   return (
     <div className={styles.registerContainer}>
-      <h2>Register</h2>
+      <div className={styles.headerBar}>
+        <div className={styles.branding}>
+          <img src="/company_icon.png" alt="Company Icon" className={styles.companyIcon} />
+          <span className={styles.companyTitle}>Blossoms Aroma</span>
+        </div>
+        <button onClick={toggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          {theme === 'dark' ? '🌙' : '☀️'}
+        </button>
+      </div>
+      <div className={styles.header}>
+        <h2>Create Account</h2>
+        <p>Join Blossoms Aroma Chemical Inventory System</p>
+      </div>
+      
       <form onSubmit={handleRegister} className={styles.registerForm}>
         <label htmlFor="email">Email</label>
         <input
@@ -44,6 +59,7 @@ const RegisterPage = () => {
           onChange={e => setEmail(e.target.value)}
           className={styles.input}
           required
+          placeholder="Enter your email address"
         />
         <label htmlFor="password">Password</label>
         <input
@@ -53,6 +69,7 @@ const RegisterPage = () => {
           onChange={e => setPassword(e.target.value)}
           className={styles.input}
           required
+          placeholder="Enter your password"
         />
         <label htmlFor="confirmPassword">Confirm Password</label>
         <input
@@ -62,12 +79,18 @@ const RegisterPage = () => {
           onChange={e => setConfirmPassword(e.target.value)}
           className={styles.input}
           required
+          placeholder="Confirm your password"
         />
         <button type="submit" className={styles.registerButton} disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
+          {loading ? 'Creating Account...' : 'Create Account'}
         </button>
       </form>
+      
       {error && <div className={styles.errorMsg}>{error}</div>}
+      
+      <div className={styles.loginLink}>
+        <p>Already have an account? <button onClick={() => navigate('/')} className={styles.linkButton}>Login here</button></p>
+      </div>
     </div>
   );
 };
