@@ -1,8 +1,27 @@
+# Core FastAPI dependencies
 fastapi
-sqlalchemy
-python-dotenv
 uvicorn
+python-dotenv
+
+# Database
+sqlalchemy
+psycopg2-binary
+
+# Authentication & Security
 firebase-admin
+python-jose[cryptography]
+
+# Data validation
 pydantic[email]
 
-psycopg2-binary
+# OTP & SMS Services
+twilio
+redis
+
+# Optional: AWS SNS for alternative SMS provider
+# Uncomment if using AWS SNS instead of Twilio
+# boto3
+
+# Development & Testing
+# pytest
+# pytest-asyncio

@@ -255,6 +255,10 @@ const DashboardPage = () => {
           <span>{userInfo?.email || user.email}</span>
         </div>
         <div>
+          <strong>Phone Number</strong>
+          <span>{userInfo?.phone || 'Not provided'}</span>
+        </div>
+        <div>
           <strong>User Role</strong>
           <span>{(userInfo?.role || 'Basic User').replace('_', ' ').toUpperCase()}</span>
         </div>

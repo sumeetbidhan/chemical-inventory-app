@@ -1,17 +1,23 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 from app.models.user import UserRole
 
 class UserBase(BaseModel):
     email: EmailStr
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
     role: UserRole
     phone: Optional[str] = None
 
 class UserCreate(UserBase):
+    uid: str
     password: str
 
 class UserUpdate(BaseModel):
+    first_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
     role: Optional[UserRole] = None
     is_approved: Optional[bool] = None
 

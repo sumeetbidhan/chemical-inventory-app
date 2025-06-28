@@ -28,7 +28,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Import all models to ensure they are registered
-from app.models import User, Invitation, ActivityLog
+from app.models import User, ActivityLog
 
 # Dependency to get database session
 def get_db():

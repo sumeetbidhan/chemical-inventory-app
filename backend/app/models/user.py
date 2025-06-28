@@ -17,6 +17,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     uid = Column(String, unique=True, index=True)  # Firebase UID
     email = Column(String, unique=True, index=True)
+    first_name = Column(String, nullable=False)  # Required first name
+    last_name = Column(String, nullable=True)    # Optional last name
     phone = Column(String, nullable=True)  # User phone number
     role = Column(Enum(UserRole), default=UserRole.LAB_STAFF)
     is_approved = Column(Boolean, default=False)

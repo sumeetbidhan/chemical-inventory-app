@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, check_database_connection
-from app.models import user, invitation, activity_log, chemical_inventory, formulation_details, notifications, account_transactions
+from app.models import user, activity_log, chemical_inventory, formulation_details, notifications, account_transactions
 import os
 
 app = FastAPI(title="Chemical Inventory API", version="1.0.0")
@@ -21,7 +21,6 @@ async def startup_event():
     try:
         # Create all tables
         user.Base.metadata.create_all(bind=engine)
-        invitation.Base.metadata.create_all(bind=engine)
         activity_log.Base.metadata.create_all(bind=engine)
         chemical_inventory.Base.metadata.create_all(bind=engine)
         formulation_details.Base.metadata.create_all(bind=engine)
@@ -67,5 +66,5 @@ def health_check():
     return {
         "status": "healthy" if db_status else "unhealthy",
         "database": "connected" if db_status else "disconnected",
-        "tables": ["users", "invitations", "activity_logs", "chemical_inventory", "formulation_details", "notifications", "account_transactions", "purchase_orders", "purchase_order_items"]
+        "tables": ["users", "activity_logs", "chemical_inventory", "formulation_details", "notifications", "account_transactions", "purchase_orders", "purchase_order_items"]
     }

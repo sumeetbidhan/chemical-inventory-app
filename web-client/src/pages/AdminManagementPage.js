@@ -273,6 +273,7 @@ const AdminManagementPage = () => {
                     <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Phone</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -284,6 +285,7 @@ const AdminManagementPage = () => {
                       <td data-label="ID">{user.id}</td>
                       <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                       <td data-label="Email">{user.email}</td>
+                      <td data-label="Phone">{user.phone || 'Not provided'}</td>
                       <td data-label="Role">
                         <select
                           value={user.role}
@@ -329,6 +331,7 @@ const AdminManagementPage = () => {
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Phone</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -339,6 +342,7 @@ const AdminManagementPage = () => {
                           <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
+                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
                           <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
@@ -374,6 +378,7 @@ const AdminManagementPage = () => {
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Phone</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -384,6 +389,7 @@ const AdminManagementPage = () => {
                           <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
+                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
                           <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
@@ -419,6 +425,7 @@ const AdminManagementPage = () => {
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Phone</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -429,6 +436,7 @@ const AdminManagementPage = () => {
                           <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
+                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
                           <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
@@ -464,6 +472,7 @@ const AdminManagementPage = () => {
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Phone</th>
                         <th>Current Role</th>
                         <th>Change Role</th>
                         <th>Actions</th>
@@ -475,6 +484,7 @@ const AdminManagementPage = () => {
                           <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
+                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
                           <td data-label="Current Role">{user.role.replace('_', ' ').toUpperCase()}</td>
                           <td data-label="Change Role">
                             <select
