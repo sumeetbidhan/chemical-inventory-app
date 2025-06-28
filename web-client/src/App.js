@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
 import LoginPage from './pages/AdminLoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -71,7 +72,7 @@ function MobileThemeToggle() {
   if (!show) return null;
   return (
     <button className="mobileThemeToggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-      {theme === 'dark' ? '🌙' : '☀️'}
+      {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
     </button>
   );
 }

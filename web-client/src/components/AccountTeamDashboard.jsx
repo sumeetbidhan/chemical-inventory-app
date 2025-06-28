@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { BarChart3, DollarSign, ClipboardList, Plus } from 'lucide-react';
 import {
   fetchAccountSummary,
   fetchTransactions,
@@ -184,25 +185,33 @@ export default function AccountTeamDashboard() {
           className={activeTab === 'overview' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('overview')}
         >
-          📊 Overview
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <BarChart3 size={16} /> Overview
+          </span>
         </button>
         <button
           className={activeTab === 'transactions' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('transactions')}
         >
-          💰 Transactions
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <DollarSign size={16} /> Transactions
+          </span>
         </button>
         <button
           className={activeTab === 'purchase-orders' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('purchase-orders')}
         >
-          📋 Purchase Orders
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <ClipboardList size={16} /> Purchase Orders
+          </span>
         </button>
         <button
           className={activeTab === 'pending' ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab('pending')}
         >
-          ⏳ Pending Items
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            ⏳ Pending Items
+          </span>
         </button>
       </div>
 
@@ -254,7 +263,9 @@ export default function AccountTeamDashboard() {
                 onClick={() => setShowTransactionForm(true)}
                 className={styles.addBtn}
               >
-                ➕ Add Transaction
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus size={16} /> Add Transaction
+                </span>
               </button>
             </div>
             <div className={styles.transactionsTable}>
@@ -305,7 +316,9 @@ export default function AccountTeamDashboard() {
                 onClick={() => setShowPurchaseOrderForm(true)}
                 className={styles.addBtn}
               >
-                ➕ Create Purchase Order
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  ➕ Create Purchase Order
+                </span>
               </button>
             </div>
             <div className={styles.purchaseOrdersList}>
@@ -489,6 +502,7 @@ function TransactionForm({ chemicals, onSubmit, onCancel }) {
             <div className={styles.formGroup}>
               <label>Currency</label>
               <select name="currency" value={formData.currency} onChange={handleChange}>
+              <option value="INR">INR</option>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
                 <option value="GBP">GBP</option>

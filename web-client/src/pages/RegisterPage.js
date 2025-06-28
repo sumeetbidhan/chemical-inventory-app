@@ -4,8 +4,13 @@ import { auth } from '../firebase';
 import styles from './RegisterPage.module.scss';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
+
+const API_BASE = 'http://localhost:8000';
 
 const RegisterPage = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,18 +22,58 @@ const RegisterPage = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
+    
+    // Validate first name
+    if (!firstName.trim()) {
+      setError('First name is required');
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
+    
     setLoading(true);
     try {
+      // Step 1: Create Firebase user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
       localStorage.setItem('firebase_token', token);
+      
+      // Step 2: Register with backend
+      const registerData = {
+        uid: userCredential.user.uid,
+        email: email,
+        first_name: firstName.trim(),
+        last_name: lastName.trim() || null,
+        role: 'all_users', // Default role for new registrations - limited access
+        password: password // This will be ignored by backend but included for schema
+      };
+      
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(registerData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+      
+      const result = await response.json();
+      console.log('Registration successful:', result);
+      
+      // Navigate to dashboard
       navigate('/dashboard');
+      
     } catch (err) {
-      setError(err.message);
+      console.error('Registration error:', err);
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -42,7 +87,7 @@ const RegisterPage = () => {
           <span className={styles.companyTitle}>Blossoms Aroma</span>
         </div>
         <button onClick={toggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-          {theme === 'dark' ? '🌙' : '☀️'}
+          {theme === 'dark' ? <Moon /> : <Sun />}
         </button>
       </div>
       <div className={styles.header}>
@@ -51,6 +96,25 @@ const RegisterPage = () => {
       </div>
       
       <form onSubmit={handleRegister} className={styles.registerForm}>
+        <label htmlFor="firstName">First Name *</label>
+        <input
+          id="firstName"
+          type="text"
+          value={firstName}
+          onChange={e => setFirstName(e.target.value)}
+          className={styles.input}
+          required
+          placeholder="Enter your first name"
+        />
+        <label htmlFor="lastName">Last Name</label>
+        <input
+          id="lastName"
+          type="text"
+          value={lastName}
+          onChange={e => setLastName(e.target.value)}
+          className={styles.input}
+          placeholder="Enter your last name (optional)"
+        />
         <label htmlFor="email">Email</label>
         <input
           id="email"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import styles from './NavBar.module.scss';
 
 export default function NavBar({ onToggleTheme, theme }) {
@@ -26,9 +27,10 @@ export default function NavBar({ onToggleTheme, theme }) {
       </div>
       <div className={styles.right}>
         <button onClick={onToggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-          {theme === 'dark' ? '🌙' : '☀️'}
+          {theme === 'dark' ? <Moon /> : <Sun />}
         </button>
         <button onClick={logout} className={styles.logoutBtn} title="Logout">
+          <LogOut size={16} />
           Logout
         </button>
       </div>

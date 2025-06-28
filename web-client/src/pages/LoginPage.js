@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './LoginPage.module.scss';
 import { useTheme } from '../context/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
 
 const LoginPage = () => {
   const [firebaseToken, setFirebaseToken] = useState('');
@@ -38,7 +39,7 @@ const LoginPage = () => {
           <span className={styles.companyTitle}>Blossoms Aroma</span>
         </div>
         <button onClick={toggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-          {theme === 'dark' ? '🌙' : '☀️'}
+          {theme === 'dark' ? <Moon /> : <Sun />}
         </button>
       </div>
       <h2 style={{ color: 'var(--primary-text)' }}>Chemical Inventory Login</h2>

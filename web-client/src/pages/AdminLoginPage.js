@@ -4,6 +4,7 @@ import { auth } from '../firebase';
 import styles from './AdminLoginPage.module.scss';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -157,7 +158,7 @@ const LoginPage = () => {
           <span className={styles.companyTitle}>Blossoms Aroma</span>
         </div>
         <button onClick={toggleTheme} className={styles.themeBtn} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
-          {theme === 'dark' ? '🌙' : '☀️'}
+          {theme === 'dark' ? <Moon /> : <Sun />}
         </button>
       </div>
       <div className={styles.header}>

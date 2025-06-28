@@ -134,10 +134,6 @@
   white-space: nowrap;
   outline: none;
   border: 2px solid transparent;
-  &::before {
-    content: '🚪';
-    font-size: 16px;
-  }
   &:hover, &:focus {
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
     box-shadow: 0 4px 16px var(--shadow-color, rgba(0,0,0,0.18));

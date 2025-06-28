@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styles from './DashboardPage.module.scss';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Clock, CheckCircle, AlertTriangle, Hand, FlaskConical, Users, DollarSign, Shield } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -21,13 +22,80 @@ const DashboardPage = () => {
     if (userInfo) {
       setPending(!userInfo.is_approved);
       setFetching(false);
+    } else if (!loading && user) {
+      // If we have a user but no userInfo, they might be pending
+      setPending(true);
+      setFetching(false);
     }
-  }, [userInfo]);
+  }, [userInfo, loading, user]);
 
   if (loading || fetching) return <div className={styles.dashboardContainer}>Loading...</div>;
   if (!user) return null;
   
-  // Show backend connection warning if backend is not available
+  // Show pending approval message first (before backend connection warning)
+  if (pending) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <div className={styles.dashboardHeader}>
+          <h2>Account Pending Approval</h2>
+        </div>
+        <div style={{ 
+          background: 'var(--warning-color)', 
+          color: 'white', 
+          padding: '32px', 
+          borderRadius: '12px',
+          textAlign: 'center',
+          opacity: 0.9,
+          marginBottom: '24px'
+        }}>
+          <div style={{ marginBottom: '16px' }}>
+            <Clock size={48} color="white" />
+          </div>
+          <h3 style={{ fontSize: '24px', margin: '0 0 16px 0' }}>
+            Welcome, {userInfo?.first_name || user.email}!
+          </h3>
+          <p style={{ fontSize: '18px', margin: '0 0 16px 0', lineHeight: '1.5' }}>
+            Your account is pending admin approval. You will be able to access the chemical inventory system once an administrator approves your account.
+          </p>
+          <p style={{ fontSize: '14px', margin: 0, opacity: 0.8, lineHeight: '1.4' }}>
+            Please contact your system administrator or wait for approval notification.
+          </p>
+        </div>
+        
+        <div style={{ 
+          background: 'var(--card-bg)', 
+          border: '1px solid var(--border-color)', 
+          borderRadius: '12px', 
+          padding: '24px',
+          textAlign: 'center'
+        }}>
+          <h4 style={{ margin: '0 0 12px 0', color: 'var(--primary-text)' }}>What happens next?</h4>
+          <ul style={{ 
+            listStyle: 'none', 
+            padding: 0, 
+            margin: 0, 
+            textAlign: 'left',
+            display: 'inline-block'
+          }}>
+            <li style={{ margin: '8px 0', padding: '8px 0', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={16} color="var(--success-color)" />
+              Admin reviews your registration
+            </li>
+            <li style={{ margin: '8px 0', padding: '8px 0', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={16} color="var(--success-color)" />
+              Account gets approved with appropriate role
+            </li>
+            <li style={{ margin: '8px 0', padding: '8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle size={16} color="var(--success-color)" />
+              You receive access to the chemical inventory system
+            </li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show backend connection warning if backend is not available (only for approved users)
   if (!backendAvailable) {
     return (
       <div className={styles.dashboardContainer}>
@@ -40,18 +108,18 @@ const DashboardPage = () => {
           color: 'white',
           opacity: 0.9
         }}>
-          <strong>⚠️ Backend Connection Warning:</strong> The backend server appears to be offline. 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <AlertTriangle size={20} color="white" />
+            <strong>Backend Connection Warning:</strong>
+          </div>
+          The backend server appears to be offline. 
           Some features may not work properly. Please ensure the backend server is running.
         </div>
         
         <div className={styles.dashboardHeader}>
-          <h2>Welcome, {user.email}</h2>
+          <h2>Welcome, {userInfo?.first_name || user.email}</h2>
         </div>
         <div className={styles.userInfo}>
-          <div>
-            <strong>User ID</strong>
-            <span>{user.uid}</span>
-          </div>
           <div>
             <strong>Email Address</strong>
             <span>{user.email}</span>
@@ -68,41 +136,24 @@ const DashboardPage = () => {
         
         <div className={styles.quickAccessBox}>
           <button className={styles.bigButton} onClick={() => navigate('/chemicals')}>
-            Go to Chemical Inventory
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+              <FlaskConical size={24} />
+              Chemical Inventory
+            </span>
           </button>
         </div>
         
         <div className={styles.permissionsBox}>
-          <h4>Limited Mode</h4>
+          <h4>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Shield size={18} />
+              Limited Mode
+            </span>
+          </h4>
           <ul>
-            <li>View inventory (if cached)</li>
-            <li>Basic navigation</li>
+            <li><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View inventory (if cached)</span></li>
+            <li><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Basic navigation</span></li>
           </ul>
-        </div>
-      </div>
-    );
-  }
-  
-  if (pending) {
-    return (
-      <div className={styles.dashboardContainer}>
-        <div className={styles.dashboardHeader}>
-          <h2>Approval Pending</h2>
-        </div>
-        <div style={{ 
-          background: 'var(--warning-color)', 
-          color: 'white', 
-          padding: '24px', 
-          borderRadius: '12px',
-          textAlign: 'center',
-          opacity: 0.9
-        }}>
-          <p style={{ fontSize: '18px', margin: '0 0 16px 0' }}>
-            Your account is pending admin approval. Please wait for approval before accessing the dashboard.
-          </p>
-          <p style={{ fontSize: '14px', margin: 0, opacity: 0.8 }}>
-            You will be notified once your account has been approved.
-          </p>
         </div>
       </div>
     );
@@ -116,52 +167,67 @@ const DashboardPage = () => {
       <>
         <div className={styles.quickAccessBox}>
           <button className={styles.bigButton} onClick={() => navigate('/chemicals')}>
-            Chemical Inventory
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+              <FlaskConical size={24} />
+              Chemical Inventory
+            </span>
           </button>
           {role === 'admin' && (
             <button className={styles.bigButton} onClick={() => navigate('/admin')}>
-              Admin Management
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                <Users size={24} />
+                Admin Management
+              </span>
             </button>
           )}
           {role === 'account' && (
             <button className={styles.bigButton} onClick={() => navigate('/account')}>
-              Account Team
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                <DollarSign size={24} />
+                Account Team
+              </span>
             </button>
           )}
         </div>
         <div className={styles.permissionsBox}>
-          <h4>Your Permissions</h4>
+          <h4>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Shield size={18} />
+              Your Permissions
+            </span>
+          </h4>
           <ul>
             {role === 'admin' && [
-              <li key="manage_users">Manage users</li>,
-              <li key="manage_invitations">Manage invitations</li>,
-              <li key="view_logs">View logs</li>,
-              <li key="approve_users">Approve users</li>,
-              <li key="delete_users">Delete users</li>,
-              <li key="modify_users">Modify users</li>,
+              <li key="manage_users"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage users</span></li>,
+              <li key="manage_invitations"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage invitations</span></li>,
+              <li key="view_logs"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View logs</span></li>,
+              <li key="approve_users"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Approve users</span></li>,
+              <li key="delete_users"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Delete users</span></li>,
+              <li key="modify_users"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Modify users</span></li>,
             ]}
             {role === 'lab_staff' && [
-              <li key="view_inventory">View inventory</li>,
-              <li key="add_chemicals">Add chemicals</li>,
-              <li key="update_chemicals">Update chemicals</li>,
-              <li key="view_reports">View reports</li>,
-              <li key="manage_safety_data">Manage safety data</li>,
+              <li key="view_inventory"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View inventory</span></li>,
+              <li key="add_chemicals"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Add chemicals</span></li>,
+              <li key="update_chemicals"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Update chemicals</span></li>,
+              <li key="view_reports"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View reports</span></li>,
+              <li key="manage_safety_data"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage safety data</span></li>,
             ]}
             {role === 'product' && [
-              <li key="view_inventory">View inventory</li>,
-              <li key="view_reports">View reports</li>,
-              <li key="export_data">Export data</li>,
-              <li key="manage_product_info">Manage product info</li>,
+              <li key="view_inventory"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View inventory</span></li>,
+              <li key="view_reports"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View reports</span></li>,
+              <li key="export_data"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Export data</span></li>,
+              <li key="manage_product_info"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage product info</span></li>,
             ]}
             {role === 'account' && [
-              <li key="view_inventory">View inventory</li>,
-              <li key="view_reports">View reports</li>,
-              <li key="manage_accounts">Manage accounts</li>,
-              <li key="view_financial_data">View financial data</li>,
+              <li key="view_inventory"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View inventory</span></li>,
+              <li key="view_reports"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View reports</span></li>,
+              <li key="manage_accounts"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage accounts</span></li>,
+              <li key="view_financial_data"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View financial data</span></li>,
             ]}
             {role === 'all_users' && [
-              <li key="view_inventory">View inventory</li>,
-              <li key="view_reports">View reports</li>,
+              <li key="view_inventory"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View inventory (read-only)</span></li>,
+              <li key="view_reports"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View basic reports</span></li>,
+              <li key="limited_access"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Limited system access</span></li>,
             ]}
           </ul>
         </div>
@@ -172,12 +238,17 @@ const DashboardPage = () => {
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
-        <h2>Welcome, {userInfo?.email || user.email}</h2>
+        <h2>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+            <Hand size={28} color="var(--accent-color)" />
+            Welcome, {userInfo?.first_name || user.email}
+          </span>
+        </h2>
       </div>
       <div className={styles.userInfo}>
         <div>
-          <strong>User ID</strong>
-          <span>{userInfo?.uid || user.uid}</span>
+          <strong>Name</strong>
+          <span>{userInfo?.first_name} {userInfo?.last_name || ''}</span>
         </div>
         <div>
           <strong>Email Address</strong>
@@ -200,6 +271,7 @@ const DashboardPage = () => {
           <span style={{ color: 'var(--success-color)' }}>Active</span>
         </div>
       </div>
+      
       {renderDashboardContent()}
     </div>
   );

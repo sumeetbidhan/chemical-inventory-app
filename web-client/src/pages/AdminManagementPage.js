@@ -3,7 +3,7 @@ import styles from './AdminManagementPage.module.scss';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const TABS = ['Users', 'Product Team', 'Account Team', 'Invite', 'Pending', 'Logs'];
+const TABS = ['Users', 'Lab Staff', 'Product Team', 'Account Team', 'Pending', 'Logs'];
 
 const API_BASE = 'http://localhost:8000';
 
@@ -15,11 +15,6 @@ const AdminManagementPage = () => {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [error, setError] = useState(null);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('lab_staff');
-  const [inviteLoading, setInviteLoading] = useState(false);
-  const [inviteError, setInviteError] = useState(null);
-  const [inviteSuccess, setInviteSuccess] = useState(null);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingError, setPendingError] = useState(null);
@@ -29,6 +24,15 @@ const AdminManagementPage = () => {
   const [role, setRole] = useState(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
+
+  // Modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalAction, setModalAction] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
 
   // Helper to get auth header
   const getAuthHeaders = () => {
@@ -51,6 +55,7 @@ const AdminManagementPage = () => {
           setUnauthorized(true);
         }
       } catch (err) {
+        console.error('Error fetching user role:', err);
         setUnauthorized(true);
       } finally {
         setRoleLoading(false);
@@ -68,8 +73,9 @@ const AdminManagementPage = () => {
   useEffect(() => {
     if (!user || role !== 'admin') return;
     if (activeTab === 'Users') fetchUsers();
-    if (activeTab === 'Product Team') fetchUsers(); // Same as users but filtered
-    if (activeTab === 'Account Team') fetchUsers(); // Same as users but filtered
+    if (activeTab === 'Lab Staff') fetchUsers();
+    if (activeTab === 'Product Team') fetchUsers();
+    if (activeTab === 'Account Team') fetchUsers();
     if (activeTab === 'Pending') fetchPendingUsers();
     if (activeTab === 'Logs') fetchLogs();
     // eslint-disable-next-line
@@ -120,82 +126,117 @@ const AdminManagementPage = () => {
     }
   };
 
-  const handleApprove = async (userId) => {
+  // Modal functions
+  const showConfirmModalAction = (action, user, message, role = null) => {
+    setModalAction(action);
+    setModalMessage(message);
+    setSelectedUser(user);
+    setNewRole(role);
+    setShowConfirmModal(true);
+  };
+
+  const hideModals = () => {
+    setShowConfirmModal(false);
+    setShowSuccessModal(false);
+    setSelectedUser(null);
+    setNewRole('');
+  };
+
+  const executeAction = async () => {
+    if (!selectedUser) return;
+
     try {
-      const res = await fetch(`${API_BASE}/admin/approve/${userId}`, {
+      let res;
+      let successMessage = '';
+
+      switch (modalAction) {
+        case 'approve':
+          res = await fetch(`${API_BASE}/admin/approve/${selectedUser.id}`, {
         method: 'POST',
         headers: { ...getAuthHeaders() }
       });
-      if (!res.ok) throw new Error('Failed to approve user');
-      fetchUsers();
-      fetchPendingUsers();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been approved successfully!`;
+          break;
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    try {
-      const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+        case 'delete':
+          res = await fetch(`${API_BASE}/admin/user/${selectedUser.id}`, {
         method: 'DELETE',
         headers: { ...getAuthHeaders() }
       });
-      if (!res.ok) throw new Error('Failed to delete user');
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.detail || 'Action failed');
+          }
+          const deleteResponse = await res.json();
+          if (deleteResponse.firebase_deleted) {
+            successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been deleted successfully from both database and Firebase!`;
+          } else {
+            successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been deleted from database, but Firebase deletion failed. Please check Firebase console.`;
+          }
+          break;
+
+        case 'roleChange':
+          res = await fetch(`${API_BASE}/admin/user/${selectedUser.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+            body: JSON.stringify({ role: newRole })
+          });
+          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name}'s role has been changed to ${newRole.replace('_', ' ').toUpperCase()} successfully!`;
+          break;
+
+        default:
+          throw new Error('Unknown action');
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Action failed');
+      }
+
+      // Refresh data
       fetchUsers();
       fetchPendingUsers();
+
+      // Show success modal
+      setModalSuccessMessage(successMessage);
+      setShowSuccessModal(true);
+      hideModals();
+
     } catch (err) {
-      alert(err.message);
+      alert(`Error: ${err.message}`);
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        body: JSON.stringify({ role: newRole })
-      });
-      if (!res.ok) throw new Error('Failed to update user role');
-      fetchUsers();
-    } catch (err) {
-      alert(err.message);
-    }
+  const handleApprove = (user) => {
+    showConfirmModalAction(
+      'approve',
+      user,
+      `Are you sure you want to approve ${user.first_name} ${user.last_name || ''}? This will give them access to the system.`
+    );
   };
 
-  const handleReject = async (userId) => {
-    // Optionally implement reject (delete user)
-    await handleDelete(userId);
+  const handleDelete = (user) => {
+    showConfirmModalAction(
+      'delete',
+      user,
+      `Are you sure you want to delete ${user.first_name} ${user.last_name || ''}? This action cannot be undone.`
+    );
   };
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    setInviteLoading(true);
-    setInviteError(null);
-    setInviteSuccess(null);
-    try {
-      const res = await fetch(`${API_BASE}/admin/invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-        body: JSON.stringify({ email: inviteEmail, role: inviteRole })
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || 'Failed to invite user');
-      }
-      setInviteSuccess('Invitation sent successfully!');
-      setInviteEmail('');
-      setInviteRole('lab_staff');
-    } catch (err) {
-      setInviteError(err.message);
-    } finally {
-      setInviteLoading(false);
-    }
+  const handleRoleChange = (user, newRole) => {
+    showConfirmModalAction(
+      'roleChange',
+      user,
+      `Are you sure you want to change ${user.first_name} ${user.last_name || ''}'s role to ${newRole.replace('_', ' ').toUpperCase()}?`,
+      newRole
+    );
   };
 
   // Filter users for different tabs
-  const productTeamUsers = users.filter(user => user.role === 'product');
-  const accountTeamUsers = users.filter(user => user.role === 'account');
+  const approvedUsers = users.filter(user => user.is_approved);
+  const labStaffUsers = users.filter(user => user.role === 'lab_staff' && user.is_approved);
+  const productTeamUsers = users.filter(user => user.role === 'product' && user.is_approved);
+  const accountTeamUsers = users.filter(user => user.role === 'account' && user.is_approved);
 
   if (loading || roleLoading) {
     return <div className={styles.adminPageContainer}>Loading...</div>;
@@ -221,7 +262,8 @@ const AdminManagementPage = () => {
       <div className={styles.tabContent}>
         {activeTab === 'Users' && (
           <div>
-            <h3>User List ({users.length} users)</h3>
+            <h3>Approved Users ({approvedUsers.length} users)</h3>
+            <p>Manage approved users with full system access.</p>
             {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
             {!loadingUsers && !error && (
@@ -229,6 +271,7 @@ const AdminManagementPage = () => {
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
@@ -236,30 +279,26 @@ const AdminManagementPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map(user => (
+                  {approvedUsers.map(user => (
                     <tr key={user.id}>
                       <td data-label="ID">{user.id}</td>
+                      <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                       <td data-label="Email">{user.email}</td>
                       <td data-label="Role">
                         <select
                           value={user.role}
-                          onChange={e => handleRoleChange(user.id, e.target.value)}
+                          onChange={e => handleRoleChange(user, e.target.value)}
                         >
                           <option value="admin">Admin</option>
                           <option value="lab_staff">Lab Staff</option>
                           <option value="product">Product</option>
                           <option value="account">Account</option>
-                          <option value="all_users">All Users</option>
+                          <option value="all_users">All Users (Limited)</option>
                         </select>
                       </td>
                       <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                       <td data-label="Actions">
-                        {!user.is_approved && (
-                          <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
-                            Approve
-                          </button>
-                        )}
-                        <button onClick={() => handleDelete(user.id)} className={styles.actionBtnDanger}>
+                        <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
                           Delete
                         </button>
                       </td>
@@ -267,6 +306,51 @@ const AdminManagementPage = () => {
                   ))}
                 </tbody>
               </table>
+            )}
+          </div>
+        )}
+        {activeTab === 'Lab Staff' && (
+          <div>
+            <h3>Lab Staff ({labStaffUsers.length} members)</h3>
+            <p>Manage lab staff members who can add and modify chemical inventory data.</p>
+            {loadingUsers && <div>Loading lab staff...</div>}
+            {error && <div className={styles.errorMsg}>{error}</div>}
+            {!loadingUsers && !error && (
+              <>
+                {labStaffUsers.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <h4>No Lab Staff Members</h4>
+                    <p>No users with "Lab Staff" role found. Users can register directly and admins can approve them.</p>
+                  </div>
+                ) : (
+                  <table className={styles.userTable}>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {labStaffUsers.map(user => (
+                        <tr key={user.id}>
+                          <td data-label="ID">{user.id}</td>
+                          <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
+                          <td data-label="Email">{user.email}</td>
+                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
+                          <td data-label="Actions">
+                            <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
             )}
           </div>
         )}
@@ -281,13 +365,14 @@ const AdminManagementPage = () => {
                 {productTeamUsers.length === 0 ? (
                   <div className={styles.emptyState}>
                     <h4>No Product Team Members</h4>
-                    <p>No users with "Product" role found. Use the "Invite" tab to add product team members.</p>
+                    <p>No users with "Product" role found. Users can register directly and admins can approve them.</p>
                   </div>
                 ) : (
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
                         <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -297,15 +382,11 @@ const AdminManagementPage = () => {
                       {productTeamUsers.map(user => (
                         <tr key={user.id}>
                           <td data-label="ID">{user.id}</td>
+                          <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
                           <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                           <td data-label="Actions">
-                            {!user.is_approved && (
-                              <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
-                                Approve
-                              </button>
-                            )}
-                            <button onClick={() => handleDelete(user.id)} className={styles.actionBtnDanger}>
+                            <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
                               Remove
                             </button>
                           </td>
@@ -329,13 +410,14 @@ const AdminManagementPage = () => {
                 {accountTeamUsers.length === 0 ? (
                   <div className={styles.emptyState}>
                     <h4>No Account Team Members</h4>
-                    <p>No users with "Account" role found. Use the "Invite" tab to add account team members.</p>
+                    <p>No users with "Account" role found. Users can register directly and admins can approve them.</p>
                   </div>
                 ) : (
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
                         <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -345,15 +427,11 @@ const AdminManagementPage = () => {
                       {accountTeamUsers.map(user => (
                         <tr key={user.id}>
                           <td data-label="ID">{user.id}</td>
+                          <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
                           <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
                           <td data-label="Actions">
-                            {!user.is_approved && (
-                              <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>
-                                Approve
-                              </button>
-                            )}
-                            <button onClick={() => handleDelete(user.id)} className={styles.actionBtnDanger}>
+                            <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
                               Remove
                             </button>
                           </td>
@@ -364,42 +442,6 @@ const AdminManagementPage = () => {
                 )}
               </>
             )}
-          </div>
-        )}
-        {activeTab === 'Invite' && (
-          <div>
-            <h3>Invite User</h3>
-            <p>Send invitations to new users. They will receive an email to register.</p>
-            <form onSubmit={handleInvite} className={styles.inviteForm}>
-              <label htmlFor="inviteEmail">Email</label>
-              <input
-                id="inviteEmail"
-                type="email"
-                value={inviteEmail}
-                onChange={e => setInviteEmail(e.target.value)}
-                className={styles.input}
-                required
-                placeholder="Enter email address"
-              />
-              <label htmlFor="inviteRole">Role</label>
-              <select
-                id="inviteRole"
-                value={inviteRole}
-                onChange={e => setInviteRole(e.target.value)}
-                className={styles.input}
-              >
-                <option value="admin">Admin</option>
-                <option value="lab_staff">Lab Staff</option>
-                <option value="product">Product Team</option>
-                <option value="account">Account Team</option>
-                <option value="all_users">All Users</option>
-              </select>
-              <button type="submit" className={styles.actionBtn} disabled={inviteLoading}>
-                {inviteLoading ? 'Inviting...' : 'Send Invitation'}
-              </button>
-            </form>
-            {inviteError && <div className={styles.errorMsg}>{inviteError}</div>}
-            {inviteSuccess && <div className={styles.successMsg}>{inviteSuccess}</div>}
           </div>
         )}
         {activeTab === 'Pending' && (
@@ -420,8 +462,10 @@ const AdminManagementPage = () => {
                     <thead>
                       <tr>
                         <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
-                        <th>Role</th>
+                        <th>Current Role</th>
+                        <th>Change Role</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -429,11 +473,28 @@ const AdminManagementPage = () => {
                       {pendingUsers.map(user => (
                         <tr key={user.id}>
                           <td data-label="ID">{user.id}</td>
+                          <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Role">{user.role}</td>
+                          <td data-label="Current Role">{user.role.replace('_', ' ').toUpperCase()}</td>
+                          <td data-label="Change Role">
+                            <select
+                              value={user.role}
+                              onChange={e => handleRoleChange(user, e.target.value)}
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="lab_staff">Lab Staff</option>
+                              <option value="product">Product</option>
+                              <option value="account">Account</option>
+                              <option value="all_users">All Users (Limited)</option>
+                            </select>
+                          </td>
                           <td data-label="Actions">
-                            <button onClick={() => handleApprove(user.id)} className={styles.actionBtn}>Approve</button>
-                            <button onClick={() => handleReject(user.id)} className={styles.actionBtnDanger}>Reject</button>
+                            <button onClick={() => handleApprove(user)} className={styles.actionBtn}>
+                              Approve
+                            </button>
+                            <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
+                              Reject
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -486,6 +547,39 @@ const AdminManagementPage = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Confirm Action</h3>
+            <p>{modalMessage}</p>
+            <div className={styles.modalActions}>
+              <button onClick={hideModals} className={styles.modalBtnCancel}>
+                Cancel
+              </button>
+              <button onClick={executeAction} className={styles.modalBtnConfirm}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Success!</h3>
+            <p>{modalSuccessMessage}</p>
+            <div className={styles.modalActions}>
+              <button onClick={hideModals} className={styles.modalBtnConfirm}>
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
