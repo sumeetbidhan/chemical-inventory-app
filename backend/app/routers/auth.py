@@ -1,15 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud.user import get_user_by_uid, create_user, get_user_by_email, get_admin_user
+from app.crud.user import get_user_by_uid, create_user, get_user_by_email, get_user_by_phone, get_admin_user
 from app.crud.invitation import get_invitation_by_email, accept_invitation
 from app.crud.activity_log import create_activity_log
 from app.schema.user import UserLogin, UserLoginResponse, UserCreate
 from app.firebase_auth import verify_firebase_token, get_current_user
 from app.models.user import UserRole
+from app.services.otp_service import OTPService
 from typing import Optional
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class OTPLoginRequest(BaseModel):
+    phone_number: str
+    otp_code: str
+
+class SendOTPRequest(BaseModel):
+    phone_number: str
 
 @router.post("/login", response_model=UserLoginResponse)
 async def login(
@@ -34,6 +43,8 @@ async def login(
                 user_data = UserCreate(
                     uid=uid,
                     email=email,
+                    first_name="",  # Will be updated later
+                    last_name=None,
                     role=invitation.role
                 )
                 user = create_user(db, user_data)
@@ -49,7 +60,9 @@ async def login(
                 user_data = UserCreate(
                     uid=uid,
                     email=email,
-                    role=UserRole.LAB_STAFF
+                    first_name="",  # Will be updated later
+                    last_name=None,
+                    role=UserRole.ALL_USERS  # Default to ALL_USERS for security
                 )
                 user = create_user(db, user_data)
                 user.is_approved = False  # Needs admin approval
@@ -84,16 +97,43 @@ async def login(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
-@router.post("/otp")
-async def otp_login(
-    phone_number: str,
-    otp_code: str,
+@router.post("/send-otp")
+async def send_otp(
+    request: SendOTPRequest,
     db: Session = Depends(get_db)
 ):
-    """OTP-based login (Firebase phone authentication)"""
-    # This would integrate with Firebase phone authentication
-    # For now, return a placeholder response
-    return {"message": "OTP login endpoint - implement Firebase phone auth"}
+    """Send OTP to phone number"""
+    try:
+        result = OTPService.send_otp(request.phone_number, db)
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["message"])
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send OTP: {str(e)}")
+
+@router.post("/otp")
+async def otp_login(
+    otp_data: OTPLoginRequest,
+    db: Session = Depends(get_db)
+):
+    """OTP-based login using phone number"""
+    try:
+        result = OTPService.verify_otp(otp_data.phone_number, otp_data.otp_code, db)
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["message"])
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OTP login failed: {str(e)}")
 
 @router.get("/me")
 async def get_current_user_info(
@@ -104,15 +144,48 @@ async def get_current_user_info(
 
 @router.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    # Validate first name is not empty
+    if not user.first_name or not user.first_name.strip():
+        raise HTTPException(status_code=400, detail="First name is required")
+    
     # Prevent multiple admins
     if user.role == UserRole.ADMIN:
         if get_admin_user(db):
             raise HTTPException(status_code=400, detail="Admin already exists")
+    
     # Prevent duplicate emails
     if get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="User already exists")
+    
+    # Override role to ALL_USERS for new registrations (security measure)
+    user.role = UserRole.ALL_USERS
+    
     # Create user as pending approval (except admin, who is auto-approved)
     db_user = create_user(db, user)
-    db_user.is_approved = user.role == UserRole.ADMIN
+    
+    # Set approval status based on role
+    if user.role == UserRole.ADMIN:
+        db_user.is_approved = True
+    else:
+        db_user.is_approved = False  # New users need admin approval
+    
     db.commit()
-    return {"message": "User registered", "is_approved": db_user.is_approved}
+    
+    # Log activity
+    create_activity_log(
+        db, db_user.id, "user_registered", 
+        f"New user registration: {user.email} ({user.first_name} {user.last_name or ''})"
+    )
+    
+    return {
+        "message": "User registered successfully", 
+        "is_approved": db_user.is_approved,
+        "user": {
+            "id": db_user.id,
+            "email": db_user.email,
+            "first_name": db_user.first_name,
+            "last_name": db_user.last_name,
+            "role": db_user.role,
+            "is_approved": db_user.is_approved
+        }
+    }

@@ -5,15 +5,10 @@ from app.crud.user import (
     get_all_users, get_pending_users, update_user, delete_user,
     get_user_by_id, get_users_by_role, get_user_by_email
 )
-from app.crud.invitation import (
-    create_invitation, get_all_invitations, delete_invitation,
-    get_invitation_by_email
-)
 from app.crud.activity_log import (
     get_activity_logs, update_activity_log_note, get_activity_log_by_id
 )
 from app.schema.user import UserUpdate, UserResponse
-from app.schema.invitation import InvitationCreate, InvitationResponse, InvitationListResponse
 from app.schema.activity_log import ActivityLogFilter, ActivityLogListResponse, ActivityLogNote
 from app.firebase_auth import get_admin_user
 from app.models.user import UserRole
@@ -22,38 +17,6 @@ import firebase_admin
 from firebase_admin import auth
 
 router = APIRouter()
-
-@router.post("/invite", response_model=InvitationResponse)
-async def invite_user(
-    invitation_data: InvitationCreate,
-    db: Session = Depends(get_db),
-    admin_user = Depends(get_admin_user)
-):
-    """Invite a new user (Admin only)"""
-    # Check if user already exists
-    existing_user = get_user_by_email(db, invitation_data.email)
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    
-    # Check if invitation already exists
-    existing_invitation = get_invitation_by_email(db, invitation_data.email)
-    if existing_invitation:
-        raise HTTPException(status_code=400, detail="Invitation already sent")
-    
-    # Create invitation
-    invitation = create_invitation(db, invitation_data)
-    
-    # TODO: Send Firebase invite email
-    # This would integrate with Firebase Auth to send invitation emails
-    
-    # Log activity
-    from app.crud.activity_log import create_activity_log
-    create_activity_log(
-        db, admin_user.id, "invite_user",
-        f"Invited user: {invitation_data.email} with role: {invitation_data.role.value}"
-    )
-    
-    return invitation
 
 @router.post("/approve/{user_id}")
 async def approve_user(
@@ -125,19 +88,37 @@ async def delete_user_admin(
     if user.id == admin_user.id:
         raise HTTPException(status_code=400, detail="Cannot delete own account")
     
-    # Delete user
+    # Store user info before deletion for Firebase deletion
+    user_uid = user.uid
+    user_email = user.email
+    
+    # Delete user from database
     success = delete_user(db, user_id)
     if not success:
-        raise HTTPException(status_code=500, detail="Failed to delete user")
+        raise HTTPException(status_code=500, detail="Failed to delete user from database")
+    
+    # Delete user from Firebase Authentication
+    try:
+        # Delete the user from Firebase Auth
+        auth.delete_user(user_uid)
+        firebase_deleted = True
+    except Exception as e:
+        # Log the error but don't fail the entire operation
+        print(f"Warning: Failed to delete user from Firebase: {e}")
+        firebase_deleted = False
     
     # Log activity
     from app.crud.activity_log import create_activity_log
     create_activity_log(
         db, admin_user.id, "delete_user",
-        f"Deleted user: {user.email}"
+        f"Deleted user: {user_email} (Database: Success, Firebase: {'Success' if firebase_deleted else 'Failed'})"
     )
     
-    return {"message": "User deleted successfully"}
+    return {
+        "message": "User deleted successfully", 
+        "database_deleted": True,
+        "firebase_deleted": firebase_deleted
+    }
 
 @router.get("/users", response_model=List[UserResponse])
 async def get_users(
@@ -162,42 +143,6 @@ async def get_pending_users_admin(
 ):
     """Get pending users (Admin only)"""
     return get_pending_users(db)
-
-@router.get("/invitations", response_model=InvitationListResponse)
-async def get_invitations(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
-    db: Session = Depends(get_db),
-    admin_user = Depends(get_admin_user)
-):
-    """Get all invitations (Admin only)"""
-    invitations = get_all_invitations(db, skip=skip, limit=limit)
-    total = len(invitations)  # This should be optimized with a count query
-    
-    return InvitationListResponse(
-        invitations=invitations,
-        total=total
-    )
-
-@router.delete("/invitation/{invitation_id}")
-async def delete_invitation_admin(
-    invitation_id: int,
-    db: Session = Depends(get_db),
-    admin_user = Depends(get_admin_user)
-):
-    """Delete invitation (Admin only)"""
-    success = delete_invitation(db, invitation_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Invitation not found")
-    
-    # Log activity
-    from app.crud.activity_log import create_activity_log
-    create_activity_log(
-        db, admin_user.id, "delete_invitation",
-        f"Deleted invitation: {invitation_id}"
-    )
-    
-    return {"message": "Invitation deleted successfully"}
 
 @router.get("/logs", response_model=ActivityLogListResponse)
 async def get_activity_logs_admin(

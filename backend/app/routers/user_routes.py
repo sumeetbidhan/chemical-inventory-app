@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud.user import get_user_by_id
+from app.crud.user import get_user_by_id, get_user_by_uid
 from app.crud.activity_log import get_user_activity_logs
 from app.schema.user import DashboardResponse, UserResponse
 from app.schema.activity_log import ActivityLogResponse
-from app.firebase_auth import get_approved_user
+from app.firebase_auth import get_approved_user, verify_firebase_token
 from app.models.user import UserRole
 from typing import List
 
@@ -15,8 +15,29 @@ router = APIRouter()
 async def get_current_user_info(
     current_user = Depends(get_approved_user)
 ):
-    """Get current user information"""
+    """Get current user information (approved users only)"""
     return current_user
+
+@router.get("/status")
+async def get_user_status(
+    token: dict = Depends(verify_firebase_token),
+    db: Session = Depends(get_db)
+):
+    """Get user status (works for both approved and pending users)"""
+    user = get_user_by_uid(db, token["uid"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "role": user.role,
+        "is_approved": user.is_approved,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at
+    }
 
 @router.get("/dashboard", response_model=DashboardResponse)
 async def get_user_dashboard(
@@ -29,7 +50,8 @@ async def get_user_dashboard(
     if current_user.role == UserRole.ADMIN:
         permissions = [
             "manage_users", "manage_invitations", "view_logs", 
-            "approve_users", "delete_users", "modify_users"
+            "approve_users", "delete_users", "modify_users","view_inventory", "add_chemicals", "update_chemicals",
+            "view_reports", "manage_safety_data","manage_accounts","view_financial_data"
         ]
     elif current_user.role == UserRole.LAB_STAFF:
         permissions = [
@@ -48,7 +70,7 @@ async def get_user_dashboard(
         ]
     elif current_user.role == UserRole.ALL_USERS:
         permissions = [
-            "view_inventory", "view_reports"
+            "view_inventory", "view_reports", "basic_access"
         ]
     
     return DashboardResponse(

@@ -9,6 +9,9 @@ def get_user_by_uid(db: Session, uid: str) -> Optional[User]:
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email).first()
 
+def get_user_by_phone(db: Session, phone: str) -> Optional[User]:
+    return db.query(User).filter(User.phone == phone).first()
+
 def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
@@ -16,8 +19,11 @@ def create_user(db: Session, user: UserCreate) -> User:
     db_user = User(
         uid=user.uid,
         email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone,
         role=user.role,
-        is_approved=True  # Auto-approve invited users
+        is_approved=False  # Always create as pending, admin must approve
     )
     db.add(db_user)
     db.commit()

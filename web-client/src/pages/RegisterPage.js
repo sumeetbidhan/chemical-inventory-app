@@ -12,6 +12,7 @@ const RegisterPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,6 +28,15 @@ const RegisterPage = () => {
     if (!firstName.trim()) {
       setError('First name is required');
       return;
+    }
+    
+    // Validate phone number (basic validation)
+    if (phone.trim()) {
+      const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
+      if (!phoneRegex.test(phone.trim())) {
+        setError('Please enter a valid phone number');
+        return;
+      }
     }
     
     if (password !== confirmPassword) {
@@ -47,6 +57,7 @@ const RegisterPage = () => {
         email: email,
         first_name: firstName.trim(),
         last_name: lastName.trim() || null,
+        phone: phone.trim() || null,
         role: 'all_users', // Default role for new registrations - limited access
         password: password // This will be ignored by backend but included for schema
       };
@@ -115,7 +126,7 @@ const RegisterPage = () => {
           className={styles.input}
           placeholder="Enter your last name (optional)"
         />
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Email *</label>
         <input
           id="email"
           type="email"
@@ -125,7 +136,16 @@ const RegisterPage = () => {
           required
           placeholder="Enter your email address"
         />
-        <label htmlFor="password">Password</label>
+        <label htmlFor="phone">Phone Number</label>
+        <input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          className={styles.input}
+          placeholder="Enter your phone number (optional, for OTP login)"
+        />
+        <label htmlFor="password">Password *</label>
         <input
           id="password"
           type="password"
@@ -135,7 +155,7 @@ const RegisterPage = () => {
           required
           placeholder="Enter your password"
         />
-        <label htmlFor="confirmPassword">Confirm Password</label>
+        <label htmlFor="confirmPassword">Confirm Password *</label>
         <input
           id="confirmPassword"
           type="password"
