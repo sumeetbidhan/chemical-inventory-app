@@ -15,31 +15,44 @@ export const AuthProvider = ({ children }) => {
   const fetchUserInfo = async (firebaseUser) => {
     try {
       const token = await firebaseUser.getIdToken();
-      const res = await fetch(`${API_BASE}/user/me`, {
+      
+      // First try to get user status (works for both approved and pending users)
+      const statusRes = await fetch(`${API_BASE}/user/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setUserInfo(data);
+      
+      if (statusRes.ok) {
+        const userData = await statusRes.json();
+        setUserInfo(userData);
         setBackendAvailable(true);
-        return data;
+        
+        // If user is approved, also fetch full dashboard data
+        if (userData.is_approved) {
+          try {
+            const dashboardRes = await fetch(`${API_BASE}/user/dashboard`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (dashboardRes.ok) {
+              const dashboardData = await dashboardRes.json();
+              // Merge dashboard data with user data
+              setUserInfo({ ...userData, ...dashboardData });
+            }
+          } catch (dashboardError) {
+            console.warn('Failed to fetch dashboard data:', dashboardError);
+            // Dashboard fetch failed, but we still have basic user info
+          }
+        }
+        
+        return userData;
       } else {
-        console.warn('Backend returned error:', res.status, res.statusText);
+        console.warn('Backend returned error:', statusRes.status, statusRes.statusText);
         setBackendAvailable(false);
+        setUserInfo(null);
       }
     } catch (error) {
       console.error('Failed to fetch user info:', error);
       setBackendAvailable(false);
-      // Create a basic user info object from Firebase user
-      const basicUserInfo = {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        role: 'all_users', // Default role
-        is_approved: true, // Assume approved for now
-        id: firebaseUser.uid
-      };
-      setUserInfo(basicUserInfo);
-      return basicUserInfo;
+      setUserInfo(null);
     }
     return null;
   };

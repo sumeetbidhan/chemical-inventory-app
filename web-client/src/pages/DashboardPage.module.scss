@@ -27,11 +27,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    
-    &::before {
-      content: '👋';
-      font-size: 28px;
-    }
   }
 }
 
@@ -112,22 +107,6 @@
   &:active {
     transform: translateY(-2px);
   }
-  
-  &::before {
-    font-size: 24px;
-  }
-  
-  &:nth-child(1)::before {
-    content: '🧪';
-  }
-  
-  &:nth-child(2)::before {
-    content: '👥';
-  }
-  
-  &:nth-child(3)::before {
-    content: '💰';
-  }
 }
 
 .permissionsBox {
@@ -147,11 +126,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    
-    &::before {
-      content: '🔐';
-      font-size: 18px;
-    }
   }
   
   ul {
@@ -175,12 +149,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    
-    &::before {
-      content: '✓';
-      color: var(--success-color);
-      font-weight: bold;
-    }
     
     &:hover {
       transform: translateX(4px);
@@ -266,10 +234,6 @@
     h2 {
       font-size: 20px;
       gap: 8px;
-      
-      &::before {
-        font-size: 16px;
-      }
     }
   }
   
@@ -303,10 +267,6 @@
     font-size: 14px;
     min-height: 50px;
     gap: 8px;
-    
-    &::before {
-      font-size: 18px;
-    }
   }
   
   .permissionsBox {
@@ -316,10 +276,6 @@
     h4 {
       font-size: 16px;
       margin-bottom: 12px;
-      
-      &::before {
-        font-size: 14px;
-      }
     }
     
     ul {
@@ -348,10 +304,6 @@
     h2 {
       font-size: 18px;
       gap: 6px;
-      
-      &::before {
-        font-size: 14px;
-      }
     }
   }
   
@@ -383,10 +335,6 @@
     font-size: 13px;
     min-height: 45px;
     gap: 6px;
-    
-    &::before {
-      font-size: 16px;
-    }
   }
   
   .permissionsBox {
@@ -396,10 +344,6 @@
     h4 {
       font-size: 14px;
       margin-bottom: 8px;
-      
-      &::before {
-        font-size: 12px;
-      }
     }
     
     li {

@@ -2,6 +2,17 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
+  AlertTriangle,
+  BarChart3,
+  DollarSign,
+  Plus,
+  FlaskConical,
+  AlertCircle,
+  Bell,
+  ClipboardList,
+  X
+} from 'lucide-react';
+import {
   fetchChemicals,
   fetchChemical,
   createChemical,
@@ -332,7 +343,9 @@ export default function ChemicalsDashboard() {
                 fontWeight: '500'
               }}
             >
-              ⚠️ Alerts ({alerts.length})
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangle size={16} /> Alerts ({alerts.length})
+              </span>
             </button>
           )}
           {canManageAlerts && (
@@ -349,7 +362,9 @@ export default function ChemicalsDashboard() {
                 fontWeight: '500'
               }}
             >
-              📢 Notifications
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Bell size={16} /> Notifications
+              </span>
             </button>
           )}
           <button onClick={() => navigate('/dashboard')} className={styles.backBtn}>
@@ -372,7 +387,7 @@ export default function ChemicalsDashboard() {
               >
                 <div className={styles.alertContent}>
                   <span className={styles.alertIcon}>
-                    {alert.severity === 'critical' ? '🚨' : '⚠️'}
+                    {alert.severity === 'critical' ? <AlertCircle size={16} color="red" /> : <AlertTriangle size={16} color="orange" />}
                   </span>
                   <span className={styles.alertMessage}>{alert.message}</span>
                   <span className={styles.alertTime}>
@@ -383,7 +398,7 @@ export default function ChemicalsDashboard() {
                   onClick={() => dismissAlert(alert.id)}
                   className={styles.dismissAlert}
                 >
-                  ×
+                  <X size={16} />
                 </button>
               </div>
             ))}
@@ -406,14 +421,18 @@ export default function ChemicalsDashboard() {
             className={activeView === 'inventory' ? styles.activeView : styles.viewBtn}
             onClick={() => setActiveView('inventory')}
           >
-            📋 Full Inventory
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <ClipboardList size={16} /> Full Inventory
+            </span>
           </button>
           {canViewProductTable && (
             <button
               className={activeView === 'product' ? styles.activeView : styles.viewBtn}
               onClick={() => setActiveView('product')}
             >
-              📊 Product Team View
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <BarChart3 size={16} /> Product Team View
+              </span>
             </button>
           )}
           {canViewAccountTable && (
@@ -421,7 +440,9 @@ export default function ChemicalsDashboard() {
               className={activeView === 'account' ? styles.activeView : styles.viewBtn}
               onClick={() => setActiveView('account')}
             >
-              💰 Account Team View
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <DollarSign size={16} /> Account Team View
+              </span>
             </button>
           )}
         </div>
@@ -450,14 +471,16 @@ export default function ChemicalsDashboard() {
                   fontWeight: '500'
                 }}
               >
-                ➕ Add Chemical
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Plus size={16} /> Add Chemical
+                </span>
               </button>
             )}
           </div>
           
           {chemicals.length === 0 ? (
             <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🧪</div>
+              <div className={styles.emptyIcon}><FlaskConical size={48} /></div>
               <h4>No Chemicals Found</h4>
               <p>Get started by adding your first chemical to the inventory.</p>
               {canCreateChemical && (
@@ -475,7 +498,9 @@ export default function ChemicalsDashboard() {
                     fontWeight: '500'
                   }}
                 >
-                  ➕ Add Your First Chemical
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Plus size={16} /> Add Your First Chemical
+                  </span>
                 </button>
               )}
               {!canCreateChemical && (
@@ -502,8 +527,8 @@ export default function ChemicalsDashboard() {
                   >
                     <div className={styles.cardHeader}>
                       <h4>{chemical.name}</h4>
-                      {hasCriticalAlert && <span className={styles.alertBadge}>🚨</span>}
-                      {hasWarningAlert && !hasCriticalAlert && <span className={styles.alertBadge}>⚠️</span>}
+                      {hasCriticalAlert && <span className={styles.alertBadge}><AlertCircle size={16} color="red" /></span>}
+                      {hasWarningAlert && !hasCriticalAlert && <span className={styles.alertBadge}><AlertTriangle size={16} color="orange" /></span>}
                     </div>
                     
                     {activeView === 'account' ? (

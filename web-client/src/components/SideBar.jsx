@@ -1,6 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { 
+  X, 
+  BarChart3, 
+  Users, 
+  FlaskConical, 
+  DollarSign, 
+  LogOut 
+} from 'lucide-react';
 import styles from './SideBar.module.scss';
 
 export default function SideBar({ open, onClose }) {
@@ -23,7 +31,7 @@ export default function SideBar({ open, onClose }) {
       {open && <div className={styles.overlay} onClick={onClose}></div>}
       <div className={`${styles.sidebar} ${open ? styles.open : ''}`}>
         <button className={styles.closeButton} onClick={onClose} aria-label="Close sidebar">
-          ✕
+          <X size={20} />
         </button>
         <nav>
           <Link 
@@ -31,7 +39,7 @@ export default function SideBar({ open, onClose }) {
             className={`${styles.navLink} ${isActive('/dashboard') ? styles.active : ''}`}
             onClick={onClose}
           >
-            📊 Dashboard
+            <BarChart3 size={20} /> Dashboard
           </Link>
           {canAccessAdmin && (
             <Link 
@@ -39,7 +47,7 @@ export default function SideBar({ open, onClose }) {
               className={`${styles.navLink} ${isActive('/admin') ? styles.active : ''}`}
               onClick={onClose}
             >
-              👥 Admin Management
+              <Users size={20} /> Admin Management
             </Link>
           )}
           {canAccessChemicals && (
@@ -48,7 +56,7 @@ export default function SideBar({ open, onClose }) {
               className={`${styles.navLink} ${isActive('/chemicals') ? styles.active : ''}`}
               onClick={onClose}
             >
-              🧪 Chemical Inventory
+              <FlaskConical size={20} /> Chemical Inventory
             </Link>
           )}
           {canAccessAccount && (
@@ -57,13 +65,13 @@ export default function SideBar({ open, onClose }) {
               className={`${styles.navLink} ${isActive('/account') ? styles.active : ''}`}
               onClick={onClose}
             >
-              💰 Account Team
+              <DollarSign size={20} /> Account Team
             </Link>
           )}
         </nav>
         <div className={styles.mobileLogoutWrapper}>
           <button className={styles.mobileLogoutBtn} onClick={logout}>
-            🚪 Logout
+            <LogOut size={20} /> Logout
           </button>
         </div>
       </div>
