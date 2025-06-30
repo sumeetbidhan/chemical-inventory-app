@@ -4,7 +4,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const AuthContext = createContext();
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000' || 'http://192.168.1.29:8000';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

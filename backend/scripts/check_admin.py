@@ -11,7 +11,7 @@ from sqlalchemy import text
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal
-from app.models.user import User, UserRole
+from a pp.models.user import User, UserRole
 
 def check_admin_users():
     """Check if there are any admin users in the database"""
