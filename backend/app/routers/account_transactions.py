@@ -511,13 +511,33 @@ def get_chemical_purchase_history(
     
     try:
         history = crud_account.get_chemical_purchase_history(db, chemical_id)
-        logger.info(f"[{datetime.now().isoformat()}] Purchase history retrieved successfully for chemical {chemical_id} by user {current_user.uid}")
+        logger.info(f"[{datetime.now().isoformat()}] Retrieved purchase history for chemical {chemical_id} for user {current_user.uid}")
         return history
     except Exception as e:
         logger.error(f"[{datetime.now().isoformat()}] Failed to fetch purchase history for chemical {chemical_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch purchase history: {str(e)}"
+        )
+
+@router.get("/chemicals/{chemical_id}/purchase-transactions", response_model=List[AccountTransactionResponse])
+def get_chemical_purchase_transactions(
+    chemical_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all purchase transactions for a specific chemical"""
+    logger.info(f"[{datetime.now().isoformat()}] User {current_user.uid} requested purchase transactions for chemical ID: {chemical_id}")
+    
+    try:
+        transactions = crud_account.get_chemical_purchase_transactions(db, chemical_id)
+        logger.info(f"[{datetime.now().isoformat()}] Retrieved {len(transactions)} purchase transactions for chemical {chemical_id} for user {current_user.uid}")
+        return transactions
+    except Exception as e:
+        logger.error(f"[{datetime.now().isoformat()}] Failed to fetch purchase transactions for chemical {chemical_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch purchase transactions: {str(e)}"
         )
 
 @router.get("/recent-transactions", response_model=List[AccountTransactionResponse])

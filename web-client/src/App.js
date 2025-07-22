@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import AdminManagementPage from './pages/AdminManagementPage';
 import ChemicalsDashboard from './components/ChemicalsDashboard';
 import ChemicalDetailPage from './pages/ChemicalDetailPage';
+import ChemicalPurchaseHistoryPage from './pages/ChemicalPurchaseHistoryPage';
 import AccountTeamDashboard from './components/AccountTeamDashboard';
 import NotificationDashboard from './components/NotificationDashboard';
 import NavBar from './components/NavBar';
@@ -156,6 +157,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ChemicalDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chemical-purchase-history/:id"
+        element={
+          <ProtectedRoute>
+            <ChemicalPurchaseHistoryPage />
           </ProtectedRoute>
         }
       />

@@ -240,6 +240,20 @@ def get_chemical_purchase_history(db: Session, chemical_id: int) -> dict:
         "currency": "INR"
     }
 
+def get_chemical_purchase_transactions(db: Session, chemical_id: int) -> List[AccountTransaction]:
+    """Get all purchase transactions for a specific chemical"""
+    logger.info(f"Fetching purchase transactions for chemical ID: {chemical_id}")
+    
+    transactions = db.query(AccountTransaction).filter(
+        and_(
+            AccountTransaction.chemical_id == chemical_id,
+            AccountTransaction.transaction_type == 'purchase'
+        )
+    ).order_by(AccountTransaction.created_at.desc()).all()
+    
+    logger.info(f"Found {len(transactions)} purchase transactions for chemical ID: {chemical_id}")
+    return transactions
+
 def get_recent_transactions(db: Session, limit: int = 10) -> List[AccountTransaction]:
     """Get recent transactions"""
     return db.query(AccountTransaction).order_by(

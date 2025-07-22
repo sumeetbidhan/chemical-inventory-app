@@ -11,12 +11,15 @@ import {
   TextInput,
   FlatList,
   ActivityIndicator,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { 
   fetchAccountSummary,
   fetchTransactions,
@@ -30,8 +33,11 @@ import {
   fetchChemicals,
   createChemical,
   approvePurchaseOrder,
-  rejectPurchaseOrder
+  rejectPurchaseOrder,
+  fetchChemicalPurchaseHistory,
+  fetchChemicalPurchaseTransactions
 } from '../services/api';
+import GradientText from '../components/GradientText';
 
 const AccountScreen = () => {
   const { userInfo } = useAuth();
@@ -104,6 +110,12 @@ const AccountScreen = () => {
     total_price: 0,
     notes: ''
   });
+
+  const [showPurchaseHistoryModal, setShowPurchaseHistoryModal] = useState(false);
+  const [selectedChemicalForHistory, setSelectedChemicalForHistory] = useState(null);
+  const [purchaseHistoryData, setPurchaseHistoryData] = useState(null);
+  const [purchaseTransactions, setPurchaseTransactions] = useState([]);
+  const [purchaseHistoryLoading, setPurchaseHistoryLoading] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -528,7 +540,8 @@ const AccountScreen = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(transaction => {
         // Search in chemical name
-        if (transaction.chemical && transaction.chemical.name.toLowerCase().includes(searchLower)) {
+        const chemicalName = transaction.chemical?.name || chemicals.find(c => c.id === transaction.chemical_id)?.name;
+        if (chemicalName && chemicalName.toLowerCase().includes(searchLower)) {
           return true;
         }
         // Search in supplier
@@ -657,7 +670,8 @@ const AccountScreen = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(transaction => {
         // Search in chemical name
-        if (transaction.chemical && transaction.chemical.name.toLowerCase().includes(searchLower)) {
+        const chemicalName = transaction.chemical?.name || chemicals.find(c => c.id === transaction.chemical_id)?.name;
+        if (chemicalName && chemicalName.toLowerCase().includes(searchLower)) {
           return true;
         }
         // Search in supplier
@@ -724,7 +738,8 @@ const AccountScreen = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(transaction => {
         // Search in chemical name
-        if (transaction.chemical && transaction.chemical.name.toLowerCase().includes(searchLower)) {
+        const chemicalName = transaction.chemical?.name || chemicals.find(c => c.id === transaction.chemical_id)?.name;
+        if (chemicalName && chemicalName.toLowerCase().includes(searchLower)) {
           return true;
         }
         // Search in supplier
@@ -815,6 +830,9 @@ const AccountScreen = () => {
         {getFilteredRecentTransactions().slice(0, 5).map((transaction, index) => (
           <View key={index} style={styles.transactionItem}>
             <View style={styles.transactionInfo}>
+              <Text style={styles.transactionChemical}>
+                {chemicals.find(c => c.id === transaction.chemical_id)?.name || 'Unknown Chemical'}
+              </Text>
               <Text style={styles.transactionAmount}>{formatCurrency(transaction.amount)}</Text>
               <Text style={styles.transactionDate}>
                 {new Date(transaction.created_at).toLocaleDateString()}
@@ -837,11 +855,11 @@ const AccountScreen = () => {
         {getFilteredPendingPurchases().slice(0, 5).map((purchase, index) => (
           <View key={index} style={styles.purchaseItem}>
             <View style={styles.purchaseInfo}>
+              {purchase.chemical && (
+                <Text style={styles.purchaseChemical}>Chemical: {purchase.chemical.name}</Text>
+              )}
               <Text style={styles.purchaseAmount}>{formatCurrency(purchase.amount)}</Text>
               <Text style={styles.purchaseSupplier}>{purchase.supplier}</Text>
-              {purchase.chemical && (
-                <Text style={styles.purchaseOrderNumber}>Chemical: {purchase.chemical.name}</Text>
-              )}
             </View>
             <View style={styles.purchaseItemRight}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(purchase.status) }]}>
@@ -897,16 +915,22 @@ const AccountScreen = () => {
                 <Text style={styles.statusText}>{item.status}</Text>
               </View>
             </View>
+            <Text style={styles.transactionChemical}>
+              Chemical: {item.chemical?.name || chemicals.find(c => c.id === item.chemical_id)?.name || 'Unknown Chemical'}
+            </Text>
             <Text style={styles.transactionType}>{item.transaction_type}</Text>
             <Text style={styles.transactionDate}>
               {new Date(item.created_at).toLocaleDateString()}
             </Text>
-            {item.chemical && (
-              <Text style={styles.transactionChemical}>Chemical: {item.chemical.name}</Text>
-            )}
             {item.supplier && (
               <Text style={styles.transactionSupplier}>Supplier: {item.supplier}</Text>
             )}
+            <TouchableOpacity 
+              style={styles.viewDetailsButton}
+              onPress={() => handleViewPurchaseHistory(item)}
+            >
+              <Text style={styles.viewDetailsButtonText}>View Details</Text>
+            </TouchableOpacity>
             {item.status === 'pending' && (
               <View style={styles.transactionActions}>
                 <TouchableOpacity 
@@ -959,6 +983,11 @@ const AccountScreen = () => {
             <Text style={styles.purchaseOrderDate}>
               {new Date(item.created_at).toLocaleDateString()}
             </Text>
+            {item.items && item.items.length > 0 && (
+              <Text style={styles.purchaseOrderChemicals}>
+                Chemicals: {item.items.map(item => item.chemical?.name || 'Unknown').join(', ')}
+              </Text>
+            )}
           </View>
         )}
         refreshControl={
@@ -985,9 +1014,9 @@ const AccountScreen = () => {
             <Text style={styles.purchaseOrderDate}>
               {new Date(item.created_at).toLocaleDateString()}
             </Text>
-            {item.chemical && (
-              <Text style={styles.purchaseOrderNumber}>Chemical: {item.chemical.name}</Text>
-            )}
+            <Text style={styles.purchaseOrderNumber}>
+              Chemical: {item.chemical?.name || chemicals.find(c => c.id === item.chemical_id)?.name || 'Unknown Chemical'}
+            </Text>
             {item.notes && (
               <Text style={styles.purchaseOrderNotes}>Notes: {item.notes}</Text>
             )}
@@ -1035,6 +1064,44 @@ const AccountScreen = () => {
     }
   };
 
+  const loadPurchaseHistoryData = async (chemicalId) => {
+    try {
+      setPurchaseHistoryLoading(true);
+      const [historyData, transactionsData] = await Promise.all([
+        fetchChemicalPurchaseHistory(chemicalId).catch(err => {
+          console.error('Error fetching purchase history:', err);
+          return {
+            chemical_id: chemicalId,
+            total_purchased: 0,
+            total_spent: 0,
+            last_purchase_date: null,
+            average_unit_price: 0,
+            currency: "INR"
+          };
+        }),
+        fetchChemicalPurchaseTransactions(chemicalId).catch(err => {
+          console.error('Error fetching purchase transactions:', err);
+          return [];
+        })
+      ]);
+      
+      setPurchaseHistoryData(historyData);
+      setPurchaseTransactions(transactionsData);
+    } catch (err) {
+      console.error('Error loading purchase history data:', err);
+      Alert.alert('Error', 'Failed to load purchase history data');
+    } finally {
+      setPurchaseHistoryLoading(false);
+    }
+  };
+
+  const handleViewPurchaseHistory = async (transaction) => {
+    const chemical = chemicals.find(c => c.id === transaction.chemical_id);
+    setSelectedChemicalForHistory(chemical);
+    setShowPurchaseHistoryModal(true);
+    await loadPurchaseHistoryData(transaction.chemical_id);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -1047,6 +1114,14 @@ const AccountScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <Text style={styles.title}>Account Dashboard</Text>
         <Text style={styles.subtitle}>Manage transactions and purchase orders</Text>
       </View>
@@ -1694,6 +1769,115 @@ const AccountScreen = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Purchase History Modal */}
+      <Modal
+        visible={showPurchaseHistoryModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              Purchase History: {selectedChemicalForHistory?.name || 'Unknown Chemical'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowPurchaseHistoryModal(false)}>
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {purchaseHistoryLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Loading purchase history...</Text>
+              </View>
+            ) : (
+              <>
+                {/* Summary Cards */}
+                <View style={styles.summaryContainer}>
+                  <View style={styles.summaryCard}>
+                    <Text style={styles.summaryLabel}>Total Purchased</Text>
+                    <Text style={styles.summaryValue}>
+                      {purchaseHistoryData?.total_purchased?.toFixed(2) || '0'} {selectedChemicalForHistory?.unit || 'units'}
+                    </Text>
+                    <Text style={styles.summarySubtext}>
+                      {purchaseTransactions.length} transactions
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.summaryCard}>
+                    <Text style={styles.summaryLabel}>Total Spent</Text>
+                    <Text style={styles.summaryValue}>
+                      {formatCurrency(purchaseHistoryData?.total_spent || 0)}
+                    </Text>
+                    <Text style={styles.summarySubtext}>
+                      Avg: {formatCurrency(purchaseHistoryData?.average_unit_price || 0)}/{selectedChemicalForHistory?.unit || 'unit'}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Purchase Transactions */}
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Purchase Transactions</Text>
+                  {purchaseTransactions.length === 0 ? (
+                    <View style={styles.emptyState}>
+                      <Ionicons name="document-outline" size={48} color="#ccc" />
+                      <Text style={styles.emptyStateText}>No purchase transactions found</Text>
+                    </View>
+                  ) : (
+                    purchaseTransactions.map((transaction, index) => (
+                      <View key={index} style={styles.transactionCard}>
+                        <View style={styles.transactionHeader}>
+                          <Text style={styles.transactionDate}>
+                            {formatDateForDisplay(transaction.created_at)}
+                          </Text>
+                          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(transaction.status) }]}>
+                            <Text style={styles.statusText}>{transaction.status}</Text>
+                          </View>
+                        </View>
+                        
+                        <View style={styles.transactionDetails}>
+                          <View style={styles.transactionRow}>
+                            <Text style={styles.transactionLabel}>Supplier:</Text>
+                            <Text style={styles.transactionValue}>{transaction.supplier || 'Not specified'}</Text>
+                          </View>
+                          
+                          <View style={styles.transactionRow}>
+                            <Text style={styles.transactionLabel}>Quantity:</Text>
+                            <Text style={styles.transactionValue}>{transaction.quantity} {transaction.unit}</Text>
+                          </View>
+                          
+                          <View style={styles.transactionRow}>
+                            <Text style={styles.transactionLabel}>Unit Price:</Text>
+                            <Text style={styles.transactionValue}>
+                              {formatCurrency(transaction.amount / transaction.quantity)}/{transaction.unit}
+                            </Text>
+                          </View>
+                          
+                          <View style={styles.transactionRow}>
+                            <Text style={styles.transactionLabel}>Total Amount:</Text>
+                            <Text style={[styles.transactionValue, styles.transactionAmount]}>
+                              {formatCurrency(transaction.amount)}
+                            </Text>
+                          </View>
+                          
+                          {transaction.notes && (
+                            <View style={styles.transactionRow}>
+                              <Text style={styles.transactionLabel}>Notes:</Text>
+                              <Text style={styles.transactionValue}>{transaction.notes}</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </View>
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1708,6 +1892,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    paddingTop: 50, // Add extra padding to avoid status bar
   },
   title: {
     fontSize: 24,
@@ -1834,10 +2019,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#212529',
   },
-  transactionDate: {
+  transactionChemical: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  transactionSupplier: {
     fontSize: 14,
     color: '#6c757d',
-    marginTop: 2,
+    marginBottom: 5,
+  },
+  transactionDate: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginBottom: 10,
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -1948,11 +2144,6 @@ const styles = StyleSheet.create({
     color: '#212529',
   },
   transactionType: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginBottom: 5,
-  },
-  transactionChemical: {
     fontSize: 14,
     color: '#6c757d',
     marginBottom: 5,
@@ -2472,6 +2663,124 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+  },
+  viewDetailsButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 10,
+  },
+  viewDetailsButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  // Purchase History Modal Styles
+  sectionContainer: {
+    padding: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 15,
+  },
+  transactionCard: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  transactionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  transactionDate: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#212529',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  statusText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+  },
+  transactionDetails: {
+    gap: 8,
+  },
+  transactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  transactionLabel: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+  transactionValue: {
+    fontSize: 14,
+    color: '#212529',
+    flex: 1,
+    textAlign: 'right',
+  },
+  transactionAmount: {
+    fontWeight: '600',
+    color: '#28a745',
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#6c757d',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  summarySubtext: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginTop: 2,
+  },
+  purchaseOrderChemicals: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginTop: 5,
+  },
+  purchaseChemical: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 5,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
 });
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, FlatList, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, FlatList, Alert, Image } from 'react-native';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import GradientText from '../components/GradientText';
 
 const TABS = ['Users', 'Lab Staff', 'Product Team', 'Account Team', 'Pending', 'Online Users', 'Logs'];
-const API_BASE = 'http://192.168.1.10:8000';
+const API_BASE = 'http://192.168.1.16:8000';
 
 export default function AdminDashboardScreen() {
   const { user, userInfo, logout, firebaseToken } = useAuth();
@@ -239,6 +240,14 @@ export default function AdminDashboardScreen() {
     <View style={styles.mainContainer}>
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <View style={styles.headerContent}>
           <View style={styles.welcomeSection}>
             <Ionicons name="shield-checkmark" size={28} color="#4f8cff" />
@@ -496,10 +505,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   header: {
-    paddingTop: 60,
+    backgroundColor: '#fff',
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     shadowColor: '#000',
@@ -507,6 +516,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
   headerContent: {
     flexDirection: 'row',

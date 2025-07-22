@@ -11,10 +11,7 @@ import {
   RegisterScreen,
   DashboardScreen,
   ChemicalsScreen,
-  ChemicalDetailScreen,
-  ChemicalFormScreen,
   FormulationsScreen,
-  FormulationFormScreen,
   AccountScreen,
   AdminManagementScreen,
   NotificationsScreen,
@@ -207,40 +204,6 @@ const RootStackNavigator = () => {
             name="Main" 
             component={DrawerNavigator}
             options={{ headerShown: false }}
-          />
-          <Stack.Screen 
-            name="ChemicalDetail" 
-            component={ChemicalDetailScreen}
-            options={{ title: 'Chemical Details' }}
-          />
-          <Stack.Screen 
-            name="ChemicalForm" 
-            component={ChemicalFormScreen}
-            options={({ route }) => ({
-              title: route.params?.id ? 'Edit Chemical' : 'Add Chemical',
-            })}
-          />
-          <Stack.Screen 
-            name="FormulationForm" 
-            component={FormulationFormScreen}
-            options={({ route }) => ({
-              title: route.params?.id ? 'Edit Formulation' : 'Add Formulation',
-            })}
-          />
-          <Stack.Screen 
-            name="AdminManagement" 
-            component={AdminManagementScreen}
-            options={{ title: 'Admin Management' }}
-          />
-          <Stack.Screen 
-            name="Notifications" 
-            component={NotificationsScreen}
-            options={{ title: 'Notifications' }}
-          />
-          <Stack.Screen 
-            name="AccountTeam" 
-            component={AccountTeamScreen}
-            options={{ title: 'Account Team' }}
           />
         </>
       )}

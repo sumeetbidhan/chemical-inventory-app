@@ -11,9 +11,12 @@ import {
   Modal,
   FlatList,
   RefreshControl,
-  Dimensions
+  Dimensions,
+  Platform,
+  Image
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { 
   fetchChemicals, 
@@ -30,6 +33,7 @@ import {
 } from '../services/api';
 import { fetchChemicalPurchaseHistory } from '../services/api';
 import { Ionicons } from '@expo/vector-icons';
+import GradientText from '../components/GradientText';
 
 const { width } = Dimensions.get('window');
 
@@ -62,6 +66,12 @@ export default function ChemicalsScreen({ navigation }) {
     amountMin: '',
     amountMax: ''
   });
+  
+  // Date picker states
+  const [showDateFromPicker, setShowDateFromPicker] = useState(false);
+  const [showDateToPicker, setShowDateToPicker] = useState(false);
+  const [dateFromPicker, setDateFromPicker] = useState(new Date());
+  const [dateToPicker, setDateToPicker] = useState(new Date());
   
   // Alerts and notifications
   const [alerts, setAlerts] = useState([]);
@@ -322,8 +332,35 @@ export default function ChemicalsScreen({ navigation }) {
   const formatCurrency = (amount, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency
+      currency: currency,
     }).format(amount);
+  };
+
+  const handleDateFromChange = (event, selectedDate) => {
+    setShowDateFromPicker(false);
+    if (selectedDate) {
+      setDateFromPicker(selectedDate);
+      setFilters(prev => ({ 
+        ...prev, 
+        lastUpdatedFrom: selectedDate.toISOString().split('T')[0] 
+      }));
+    }
+  };
+
+  const handleDateToChange = (event, selectedDate) => {
+    setShowDateToPicker(false);
+    if (selectedDate) {
+      setDateToPicker(selectedDate);
+      setFilters(prev => ({ 
+        ...prev, 
+        lastUpdatedTo: selectedDate.toISOString().split('T')[0] 
+      }));
+    }
+  };
+
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString();
   };
 
   // Filter chemicals based on search term and filters
@@ -406,6 +443,14 @@ export default function ChemicalsScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <Text style={styles.headerTitle}>Chemical Inventory Management</Text>
         <View style={styles.headerInfo}>
           <Text style={styles.headerSubtitle}>
@@ -522,19 +567,25 @@ export default function ChemicalsScreen({ navigation }) {
             <View style={styles.filterGroup}>
               <Text style={styles.filterLabel}>Last Updated Range</Text>
               <View style={styles.dateInputs}>
-                <TextInput
+                <TouchableOpacity
                   style={styles.dateInput}
-                  placeholder="From (YYYY-MM-DD)"
-                  value={filters.lastUpdatedFrom}
-                  onChangeText={(text) => setFilters(prev => ({ ...prev, lastUpdatedFrom: text }))}
-                />
+                  onPress={() => setShowDateFromPicker(true)}
+                >
+                  <Text style={filters.lastUpdatedFrom ? styles.dateText : styles.datePlaceholder}>
+                    {filters.lastUpdatedFrom ? formatDateForDisplay(filters.lastUpdatedFrom) : 'From Date'}
+                  </Text>
+                  <Ionicons name="calendar" size={16} color="#666" />
+                </TouchableOpacity>
                 <Text style={styles.rangeSeparator}>to</Text>
-                <TextInput
+                <TouchableOpacity
                   style={styles.dateInput}
-                  placeholder="To (YYYY-MM-DD)"
-                  value={filters.lastUpdatedTo}
-                  onChangeText={(text) => setFilters(prev => ({ ...prev, lastUpdatedTo: text }))}
-                />
+                  onPress={() => setShowDateToPicker(true)}
+                >
+                  <Text style={filters.lastUpdatedTo ? styles.dateText : styles.datePlaceholder}>
+                    {filters.lastUpdatedTo ? formatDateForDisplay(filters.lastUpdatedTo) : 'To Date'}
+                  </Text>
+                  <Ionicons name="calendar" size={16} color="#666" />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -784,6 +835,25 @@ export default function ChemicalsScreen({ navigation }) {
           title={editingFormulation ? 'Edit Formulation' : 'Add Formulation Detail'}
         />
       )}
+
+      {/* Date Pickers */}
+      {showDateFromPicker && (
+        <DateTimePicker
+          value={dateFromPicker}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateFromChange}
+        />
+      )}
+      
+      {showDateToPicker && (
+        <DateTimePicker
+          value={dateToPicker}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateToChange}
+        />
+      )}
     </View>
   );
 }
@@ -809,6 +879,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    paddingTop: 50, // Add extra padding to avoid status bar
   },
   headerTitle: {
     fontSize: 20,
@@ -998,6 +1069,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  datePlaceholder: {
+    fontSize: 14,
+    color: '#999',
   },
   textInput: {
     backgroundColor: 'white',
@@ -1226,6 +1308,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: '500',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
 });
 

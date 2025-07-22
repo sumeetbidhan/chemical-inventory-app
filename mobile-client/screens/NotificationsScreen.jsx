@@ -11,12 +11,14 @@ import {
   TextInput,
   FlatList,
   ActivityIndicator,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import GradientText from '../components/GradientText';
 import { 
   fetchNotifications,
   sendNotification,
@@ -525,6 +527,19 @@ const NotificationsScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText 
+            colors={['#654321', '#8B7355', '#B8860B']} 
+            style={styles.companyName}
+          >
+            Blossoms Aroma
+          </GradientText>
+        </View>
         <Text style={styles.title}>Notifications</Text>
         <Text style={styles.subtitle}>Manage and view notifications</Text>
         <View style={styles.notificationStats}>
@@ -939,6 +954,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    paddingTop: 50, // Add extra padding to avoid status bar
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
   title: {
     fontSize: 24,

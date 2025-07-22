@@ -1,21 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  ActivityIndicator,
-  Alert
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Ionicons, 
-  MaterialIcons, 
-  MaterialCommunityIcons,
-  FontAwesome5,
-  Feather
-} from '@expo/vector-icons';
+import GradientText from '../components/GradientText';
 
 const API_BASE = 'http://192.168.1.10:8000';
 
@@ -139,7 +126,7 @@ const DashboardScreen = ({ navigation }) => {
             style={styles.quickAccessButton}
             onPress={() => navigation.navigate('Chemicals')}
           >
-            <MaterialCommunityIcons name="flask" size={24} color="#fff" />
+            <MaterialIcons name="flask" size={24} color="#fff" />
             <Text style={styles.quickAccessText}>Chemical Inventory</Text>
           </TouchableOpacity>
         </View>
@@ -176,7 +163,7 @@ const DashboardScreen = ({ navigation }) => {
             style={styles.quickAccessButton}
             onPress={() => navigation.navigate('Chemicals')}
           >
-            <MaterialCommunityIcons name="flask" size={24} color="#fff" />
+            <MaterialIcons name="flask" size={24} color="#fff" />
             <Text style={styles.quickAccessText}>Chemical Inventory</Text>
           </TouchableOpacity>
           
@@ -314,12 +301,19 @@ const DashboardScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <View style={styles.headerContent}>
           <View style={styles.welcomeSection}>
-            <Ionicons name="hand-left" size={28} color="#4f8cff" />
             <Text style={styles.title}>Welcome, {userInfo?.first_name || user.email}</Text>
           </View>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -576,6 +570,21 @@ const styles = StyleSheet.create({
   permissionText: {
     fontSize: 14,
     color: '#666',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
 });
 

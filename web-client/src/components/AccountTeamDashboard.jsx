@@ -636,6 +636,9 @@ export default function AccountTeamDashboard() {
                       </div>
                     </div>
                     <div className={styles.transactionDetails}>
+                      <div className={styles.transactionChemical}>
+                        {chemicals.find(c => c.id === transaction.chemical_id)?.name || 'Unknown Chemical'}
+                      </div>
                       <div className={styles.transactionQuantity}>
                         {transaction.quantity} {transaction.unit}
                       </div>
@@ -706,7 +709,7 @@ export default function AccountTeamDashboard() {
                       <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
                       <td>
                         <button
-                          onClick={() => navigate(`/chemicals/${transaction.chemical_id}`)}
+                          onClick={() => navigate(`/chemical-purchase-history/${transaction.chemical_id}`)}
                           style={{
                             background: '#007bff',
                             color: 'white',
