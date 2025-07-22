@@ -9,4 +9,5 @@ export { default as FormulationFormScreen } from './FormulationFormScreen';
 export { default as AccountScreen } from './AccountScreen';
 export { default as AdminManagementScreen } from './AdminManagementScreen';
 export { default as NotificationsScreen } from './NotificationsScreen';
-export { default as AccountTeamScreen } from './AccountTeamScreen'; 
+export { default as AccountTeamScreen } from './AccountTeamScreen';
+export { default as ChemicalPurchaseHistoryScreen } from './ChemicalPurchaseHistoryScreen'; 

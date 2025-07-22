@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../firebase';
 
 // Use the same IP address that's working for the dashboard
-const API_BASE = 'http://192.168.1.10:8000';
+const API_BASE = 'http://192.168.1.16:8000';
 
 // Helper to get auth header
 const getAuthHeaders = async () => {
@@ -433,7 +433,21 @@ export const fetchChemicalPurchaseHistory = async (chemicalId) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Failed to fetch purchase history');
+    throw new Error(error.detail || 'Failed to fetch chemical purchase history');
+  }
+
+  return response.json();
+};
+
+export const fetchChemicalPurchaseTransactions = async (chemicalId) => {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${API_BASE}/account/chemicals/${chemicalId}/purchase-transactions`, {
+    headers
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to fetch chemical purchase transactions');
   }
 
   return response.json();

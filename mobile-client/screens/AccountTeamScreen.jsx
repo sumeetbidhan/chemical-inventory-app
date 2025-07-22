@@ -1,19 +1,8 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView,
-  Alert 
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Ionicons, 
-  MaterialCommunityIcons, 
-  MaterialIcons,
-  FontAwesome5 
-} from '@expo/vector-icons';
+import GradientText from '../components/GradientText';
 
 export default function AccountTeamScreen({ navigation }) {
   const { user, userInfo, logout } = useAuth();
@@ -33,6 +22,14 @@ export default function AccountTeamScreen({ navigation }) {
     <View style={styles.mainContainer}>
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <View style={styles.headerContent}>
           <View style={styles.welcomeSection}>
             <FontAwesome5 name="dollar-sign" size={28} color="#4f8cff" />
@@ -82,7 +79,7 @@ export default function AccountTeamScreen({ navigation }) {
             style={styles.quickAccessButton}
             onPress={() => navigation.navigate('Chemicals')}
           >
-            <MaterialCommunityIcons name="flask" size={24} color="#fff" />
+            <MaterialIcons name="flask" size={24} color="#fff" />
             <Text style={styles.quickAccessText}>Chemical Inventory</Text>
           </TouchableOpacity>
           
@@ -154,17 +151,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   header: {
-    paddingTop: 60,
+    backgroundColor: '#fff',
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   headerContent: {
     flexDirection: 'row',
@@ -283,5 +275,20 @@ const styles = StyleSheet.create({
   permissionText: {
     fontSize: 14,
     color: '#666',
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#8B4513', // Saddle Brown - more brown color
   },
 }); 

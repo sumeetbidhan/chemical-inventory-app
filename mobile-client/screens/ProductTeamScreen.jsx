@@ -5,7 +5,8 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView,
-  Alert 
+  Alert,
+  Image
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -14,6 +15,7 @@ import {
   MaterialIcons,
   FontAwesome5 
 } from '@expo/vector-icons';
+import GradientText from '../components/GradientText';
 
 export default function ProductTeamScreen({ navigation }) {
   const { user, userInfo, logout } = useAuth();
@@ -33,6 +35,14 @@ export default function ProductTeamScreen({ navigation }) {
     <View style={styles.mainContainer}>
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/company_icon.png')} 
+            style={styles.companyLogo}
+            resizeMode="contain"
+          />
+          <GradientText style={styles.companyName}>Blossoms Aroma</GradientText>
+        </View>
         <View style={styles.headerContent}>
           <View style={styles.welcomeSection}>
             <MaterialIcons name="inventory" size={28} color="#4f8cff" />
@@ -154,10 +164,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   header: {
-    paddingTop: 60,
+    backgroundColor: '#fff',
+    paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     shadowColor: '#000',
@@ -165,6 +175,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  companyLogo: {
+    width: 35,
+    height: 35,
+    marginRight: 10,
+  },
+  companyName: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   headerContent: {
     flexDirection: 'row',

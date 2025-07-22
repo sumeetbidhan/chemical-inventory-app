@@ -224,6 +224,23 @@
   color: var(--secondary-text);
 }
 
+.transactionChemical {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-text);
+  margin-bottom: 2px;
+}
+
+.transactionQuantity {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+
+.transactionDate {
+  font-size: 11px;
+  color: var(--secondary-text);
+}
+
 .transactionStatus {
   display: flex;
   align-items: center;

@@ -210,7 +210,20 @@ export const fetchChemicalPurchaseHistory = async (chemicalId) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || 'Failed to fetch purchase history');
+    throw new Error(error.detail || 'Failed to fetch chemical purchase history');
+  }
+
+  return response.json();
+};
+
+export const fetchChemicalPurchaseTransactions = async (chemicalId) => {
+  const response = await fetch(`${API_BASE}/account/chemicals/${chemicalId}/purchase-transactions`, {
+    headers: getAuthHeaders()
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to fetch chemical purchase transactions');
   }
 
   return response.json();
