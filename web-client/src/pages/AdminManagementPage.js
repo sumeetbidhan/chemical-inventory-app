@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import styles from './AdminManagementPage.module.scss';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
-const TABS = ['Users', 'Lab Staff', 'Product Team', 'Account Team', 'Pending', 'Online Users', 'Logs'];
+import { useAuth } from '../context/AuthContext';
+import styles from './AdminManagementPage.module.scss';
 
 const API_BASE = 'http://localhost:8000';
 
 const AdminManagementPage = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, userInfo } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('Users');
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [error, setError] = useState(null);
@@ -21,21 +18,45 @@ const AdminManagementPage = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState(null);
-  const [logs, setLogs] = useState([]);
-  const [logsLoading, setLogsLoading] = useState(false);
-  const [logsError, setLogsError] = useState(null);
   const [role, setRole] = useState(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [activeUserTab, setActiveUserTab] = useState('All Users');
 
   // Modal states
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalAction, setModalAction] = useState('');
   const [modalMessage, setModalMessage] = useState('');
-  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [newRole, setNewRole] = useState('');
+  const [showRoleChangeModal, setShowRoleChangeModal] = useState(false);
+  const [roleChangeData, setRoleChangeData] = useState({ user: null, newRole: '' });
+
+  // Role mapping for backend
+  const roleMapping = {
+    'ADMIN': 1,
+    'LAB': 2,
+    'PRODUCT': 3,
+    'ACCOUNTS': 4,
+    'ALL_USERS': 5
+  };
+
+  const reverseRoleMapping = {
+    1: 'ADMIN',
+    2: 'LAB',
+    3: 'PRODUCT',
+    4: 'ACCOUNTS',
+    5: 'ALL_USERS'
+  };
+
+  // Helper function to get role name from role ID
+  const getRoleName = (roleId) => {
+    return reverseRoleMapping[roleId] || 'Unknown';
+  };
+
+  // Helper function to get role ID from role name
+  const getRoleId = (roleName) => {
+    return roleMapping[roleName] || 5; // Default to ALL_USERS
+  };
 
   // Helper to get auth header
   const getAuthHeaders = () => {
@@ -54,8 +75,14 @@ const AdminManagementPage = () => {
         if (!res.ok) throw new Error('Failed to fetch user info');
         const data = await res.json();
         
-        setRole(data.role);
-        if (data.role !== 'admin') {
+        console.log('User data from /user/me:', data);
+        
+        // Check if user has admin role (role_id === 1)
+        if (data.role_id === 1) {
+          setRole('ADMIN');
+          setUnauthorized(false);
+        } else {
+          setRole(data.role_id);
           setUnauthorized(true);
         }
       } catch (err) {
@@ -75,27 +102,23 @@ const AdminManagementPage = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (!user || role !== 'admin') return;
-    if (activeTab === 'Users') fetchUsers();
-    if (activeTab === 'Lab Staff') fetchUsers();
-    if (activeTab === 'Product Team') fetchUsers();
-    if (activeTab === 'Account Team') fetchUsers();
-    if (activeTab === 'Pending') fetchPendingUsers();
-    if (activeTab === 'Online Users') fetchOnlineUsers();
-    if (activeTab === 'Logs') fetchLogs();
+    if (!user || role !== 'ADMIN') return;
+    fetchUsers();
+    fetchOnlineUsers();
+    fetchPendingUsers();
     // eslint-disable-next-line
-  }, [activeTab, user, role]);
+  }, [user, role]);
 
-  // Auto-refresh online users every 30 seconds when on Online Users tab
+  // Auto-refresh online users every 30 seconds
   useEffect(() => {
-    if (!user || role !== 'admin' || activeTab !== 'Online Users') return;
+    if (!user || role !== 'ADMIN') return;
     
     const interval = setInterval(() => {
       fetchOnlineUsers();
     }, 30000); // Refresh every 30 seconds
     
     return () => clearInterval(interval);
-  }, [activeTab, user, role]);
+  }, [user, role]);
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
@@ -113,11 +136,30 @@ const AdminManagementPage = () => {
     }
   };
 
+  const fetchOnlineUsers = async () => {
+    setOnlineLoading(true);
+    setOnlineError(null);
+    try {
+      const res = await fetch(`${API_BASE}/admin/online-users?minutes_threshold=5`, { 
+        headers: { ...getAuthHeaders() } 
+      });
+      if (!res.ok) throw new Error('Failed to fetch online users');
+      const data = await res.json();
+      setOnlineUsers(data);
+    } catch (err) {
+      setOnlineError(err.message);
+    } finally {
+      setOnlineLoading(false);
+    }
+  };
+
   const fetchPendingUsers = async () => {
     setPendingLoading(true);
     setPendingError(null);
     try {
-      const res = await fetch(`${API_BASE}/admin/pending-users`, { headers: { ...getAuthHeaders() } });
+      const res = await fetch(`${API_BASE}/admin/pending-users`, { 
+        headers: { ...getAuthHeaders() } 
+      });
       if (!res.ok) throw new Error('Failed to fetch pending users');
       const data = await res.json();
       setPendingUsers(data);
@@ -128,57 +170,22 @@ const AdminManagementPage = () => {
     }
   };
 
-  const fetchOnlineUsers = async () => {
-    setOnlineLoading(true);
-    setOnlineError(null);
-    try {
-      const res = await fetch(`${API_BASE}/admin/online-users?minutes_threshold=5`, { 
-        headers: { ...getAuthHeaders() } 
-      });
-      if (!res.ok) throw new Error('Failed to fetch online users');
-      const data = await res.json();
-      console.log('Online users data:', data);
-      setOnlineUsers(data);
-    } catch (err) {
-      console.error('Error fetching online users:', err);
-      setOnlineError(err.message);
-    } finally {
-      setOnlineLoading(false);
-    }
-  };
-
-  const fetchLogs = async () => {
-    setLogsLoading(true);
-    setLogsError(null);
-    try {
-      const res = await fetch(`${API_BASE}/admin/logs`, { headers: { ...getAuthHeaders() } });
-      if (!res.ok) throw new Error('Failed to fetch logs');
-      const data = await res.json();
-      setLogs(data.logs || []);
-    } catch (err) {
-      setLogsError(err.message);
-    } finally {
-      setLogsLoading(false);
-    }
-  };
-
   // Modal functions
   const showConfirmModalAction = (action, user, message, role = null) => {
     setModalAction(action);
     setModalMessage(message);
     setSelectedUser(user);
-    setNewRole(role);
     setShowConfirmModal(true);
   };
 
   const hideModals = () => {
     setShowConfirmModal(false);
-    setShowSuccessModal(false);
+    setShowRoleChangeModal(false);
     setSelectedUser(null);
-    setNewRole('');
+    setRoleChangeData({ user: null, newRole: '' });
   };
 
-  const executeAction = async () => {
+  const handleModalAction = async () => {
     if (!selectedUser) return;
 
     try {
@@ -186,14 +193,6 @@ const AdminManagementPage = () => {
       let successMessage = '';
 
       switch (modalAction) {
-        case 'approve':
-          res = await fetch(`${API_BASE}/admin/approve/${selectedUser.id}`, {
-        method: 'POST',
-        headers: { ...getAuthHeaders() }
-      });
-          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been approved successfully!`;
-          break;
-
         case 'delete':
           res = await fetch(`${API_BASE}/admin/user/${selectedUser.id}`, {
         method: 'DELETE',
@@ -201,45 +200,39 @@ const AdminManagementPage = () => {
       });
           if (!res.ok) {
             const errorData = await res.json();
-            throw new Error(errorData.detail || 'Action failed');
+            throw new Error(errorData.detail || 'Failed to delete user');
           }
-          const deleteResponse = await res.json();
-          if (deleteResponse.firebase_deleted) {
-            successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been deleted successfully from both database and Firebase!`;
-          } else {
-            successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been deleted from database, but Firebase deletion failed. Please check Firebase console.`;
-          }
+          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been deleted successfully!`;
           break;
 
-        case 'roleChange':
-          res = await fetch(`${API_BASE}/admin/user/${selectedUser.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-            body: JSON.stringify({ role: newRole })
+        case 'approve':
+          res = await fetch(`${API_BASE}/admin/approve/${selectedUser.id}`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders() }
           });
-          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name}'s role has been changed to ${newRole.replace('_', ' ').toUpperCase()} successfully!`;
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.detail || 'Failed to approve user');
+          }
+          successMessage = `User ${selectedUser.first_name} ${selectedUser.last_name} has been approved successfully!`;
           break;
 
         default:
-          throw new Error('Unknown action');
+          throw new Error('Invalid action');
       }
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || 'Action failed');
-      }
-
+      if (res.ok) {
       // Refresh data
       fetchUsers();
       fetchPendingUsers();
 
-      // Show success modal
-      setModalSuccessMessage(successMessage);
-      setShowSuccessModal(true);
+        // Show success message
+        alert(successMessage);
       hideModals();
-
-    } catch (err) {
-      alert(`Error: ${err.message}`);
+      }
+    } catch (error) {
+      console.error('Error performing action:', error);
+      alert(`Action failed: ${error.message}`);
     }
   };
 
@@ -247,7 +240,7 @@ const AdminManagementPage = () => {
     showConfirmModalAction(
       'approve',
       user,
-      `Are you sure you want to approve ${user.first_name} ${user.last_name || ''}? This will give them access to the system.`
+      `Are you sure you want to approve ${user.first_name} ${user.last_name || ''}? This will give them access to the system and they will be able to login immediately.`
     );
   };
 
@@ -255,45 +248,76 @@ const AdminManagementPage = () => {
     showConfirmModalAction(
       'delete',
       user,
-      `Are you sure you want to delete ${user.first_name} ${user.last_name || ''}? This action cannot be undone.`
+      `Are you sure you want to delete ${user.first_name} ${user.last_name || ''}? This action will permanently remove the user from the system and cannot be undone. All associated data will be lost.`
     );
   };
 
-  const handleRoleChange = (user, newRole) => {
-    showConfirmModalAction(
-      'roleChange',
-      user,
-      `Are you sure you want to change ${user.first_name} ${user.last_name || ''}'s role to ${newRole.replace('_', ' ').toUpperCase()}?`,
-      newRole
-    );
+  const handleRoleChange = async (user, newRole) => {
+    // Show confirmation modal instead of immediately changing role
+    setRoleChangeData({ user, newRole });
+    setShowRoleChangeModal(true);
+  };
+
+  const confirmRoleChange = async () => {
+    const { user, newRole } = roleChangeData;
+    try {
+      const roleId = getRoleId(newRole);
+      const res = await fetch(`${API_BASE}/admin/user/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ 
+          role_id: roleId,
+          is_approved: true // Automatically approve when role is changed
+        })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Failed to update user role');
+      }
+      
+      // Update local state
+      setUsers(prevUsers => prevUsers.map(u => 
+        u.id === user.id ? { ...u, role_id: roleId, is_approved: true } : u
+      ));
+      
+      // Also update pending users if this user was pending
+      setPendingUsers(prevPending => prevPending.filter(u => u.id !== user.id));
+      
+      alert(`User ${user.first_name} role updated to ${newRole} and approved successfully!`);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      alert(`Failed to update user role: ${error.message}`);
+    } finally {
+      setShowRoleChangeModal(false);
+      setRoleChangeData({ user: null, newRole: '' });
+    }
   };
 
   // Filter users for different tabs
   const approvedUsers = users.filter(user => user.is_approved);
-  const labStaffUsers = users.filter(user => user.role === 'lab_staff' && user.is_approved);
-  const productTeamUsers = users.filter(user => user.role === 'product' && user.is_approved);
-  const accountTeamUsers = users.filter(user => user.role === 'account' && user.is_approved);
+  const labStaffUsers = users.filter(user => 
+    user.role_id === 2 && user.is_approved
+  );
+  const productTeamUsers = users.filter(user => 
+    user.role_id === 3 && user.is_approved
+  );
+  const accountTeamUsers = users.filter(user => 
+    user.role_id === 4 && user.is_approved
+  );
 
   // Helper function to check if user is online (active in last 5 minutes)
   const isUserOnline = (user) => {
-    if (!user.last_seen) {
-      console.log('User has no last_seen:', user.email);
+    if (!user.last_seen) return false;
+    
+    try {
+      const lastSeen = new Date(user.last_seen);
+      const now = new Date();
+      const diffInMinutes = (now - lastSeen) / (1000 * 60);
+      return diffInMinutes <= 5;
+    } catch (error) {
+      console.error('Error parsing last_seen date:', error);
       return false;
     }
-    
-    // Parse the last_seen date (backend sends UTC)
-    const lastSeen = new Date(user.last_seen);
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const isOnline = lastSeen > fiveMinutesAgo;
-    
-    console.log('Online check for', user.email, ':', { 
-      lastSeen: lastSeen.toISOString(), 
-      fiveMinutesAgo: fiveMinutesAgo.toISOString(), 
-      isOnline,
-      timeDiff: Math.floor((lastSeen - fiveMinutesAgo) / 1000 / 60) + ' minutes'
-    });
-    
-    return isOnline;
   };
 
   // Helper function to get online status display
@@ -304,32 +328,55 @@ const AdminManagementPage = () => {
     return <span className={styles.offlineStatus}>⚫ Offline</span>;
   };
 
+  // Debug logging
+  console.log('AdminManagementPage Debug:', {
+    user,
+    role,
+    roleLoading,
+    unauthorized,
+    userInfo
+  });
+
   if (loading || roleLoading) {
     return <div className={styles.adminPageContainer}>Loading...</div>;
   }
   if (unauthorized) {
-    return <div className={styles.adminPageContainer}><h2>Unauthorized</h2><p>You do not have permission to access this page.</p></div>;
+    return (
+      <div className={styles.adminPageContainer}>
+        <h2>Unauthorized</h2>
+        <p>You do not have permission to access this page.</p>
+        <p>Debug info: role={role}, user={user?.email}</p>
+      </div>
+    );
   }
 
   return (
     <div className={styles.adminPageContainer}>
       <h2>Admin Management</h2>
-      <div className={styles.tabs}>
-        {TABS.map(tab => (
+      
+      {/* User Management Section */}
+      <div className={styles.userManagementContainer}>
+        <h3>User Management</h3>
+        <p>Manage all users in the system, approve new registrations, and assign roles.</p>
+        
+        {/* User Management Navigation Tabs */}
+        <div className={styles.userManagementTabs}>
+          {['All Users', 'Lab Staff', 'Product Team', 'Account Team', 'Pending', 'Live Users'].map(tab => (
           <button
             key={tab}
-            className={activeTab === tab ? styles.activeTab : styles.tab}
-            onClick={() => setActiveTab(tab)}
+              className={activeUserTab === tab ? styles.activeUserTab : styles.userTab}
+              onClick={() => setActiveUserTab(tab)}
           >
             {tab}
           </button>
         ))}
       </div>
-      <div className={styles.tabContent}>
-        {activeTab === 'Users' && (
+
+        <div className={styles.userManagementContent}>
+          {/* All Users Tab */}
+          {activeUserTab === 'All Users' && (
           <div>
-            <h3>Approved Users ({approvedUsers.length} users)</h3>
-            <p>Manage approved users with full system access.</p>
+              <h4>All Approved Users ({approvedUsers.length} total)</h4>
             <button 
               onClick={() => {
                 fetchUsers();
@@ -340,43 +387,40 @@ const AdminManagementPage = () => {
             >
               {loadingUsers ? 'Refreshing...' : 'Refresh'}
             </button>
+              
             {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
-            {!loadingUsers && !error && (
+              
+              {!loadingUsers && !error && approvedUsers.length > 0 && (
               <table className={styles.userTable}>
                 <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Name</th>
+                      <th>Role</th>
                     <th>Email</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Online</th>
+                      <th>Online Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {approvedUsers.map(user => (
                     <tr key={user.id}>
-                      <td data-label="ID">{user.id}</td>
                       <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
-                      <td data-label="Email">{user.email}</td>
-                      <td data-label="Phone">{user.phone || 'Not provided'}</td>
                       <td data-label="Role">
                         <select
-                          value={user.role}
+                            value={getRoleName(user.role_id || user.role)}
                           onChange={e => handleRoleChange(user, e.target.value)}
-                        >
-                          <option value="admin">Admin</option>
-                          <option value="lab_staff">Lab Staff</option>
-                          <option value="product">Product</option>
-                          <option value="account">Account</option>
-                          <option value="all_users">All Users (Limited)</option>
+                            className={styles.roleSelect}
+                          >
+                            <option value="ADMIN">Admin</option>
+                            <option value="LAB">Lab Staff</option>
+                            <option value="PRODUCT">Product</option>
+                            <option value="ACCOUNTS">Account</option>
+                            <option value="ALL_USERS">All Users (Limited)</option>
                         </select>
                       </td>
-                      <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
-                      <td data-label="Online">{getOnlineStatus(user)}</td>
+                        <td data-label="Email">{user.email}</td>
+                        <td data-label="Online Status">{getOnlineStatus(user)}</td>
                       <td data-label="Actions">
                         <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
                           Delete
@@ -387,46 +431,67 @@ const AdminManagementPage = () => {
                 </tbody>
               </table>
             )}
+              
+              {!loadingUsers && !error && approvedUsers.length === 0 && (
+                <div className={styles.emptyState}>
+                  <h4>No Approved Users Found</h4>
+                  <p>There are no approved users in the system yet.</p>
+                </div>
+              )}
           </div>
         )}
-        {activeTab === 'Lab Staff' && (
+
+          {/* Lab Staff Tab */}
+          {activeUserTab === 'Lab Staff' && (
           <div>
-            <h3>Lab Staff ({labStaffUsers.length} members)</h3>
-            <p>Manage lab staff members who can add and modify chemical inventory data.</p>
-            {loadingUsers && <div>Loading lab staff...</div>}
+              <h4>Lab Staff Users ({labStaffUsers.length} total)</h4>
+              <button 
+                onClick={() => {
+                  fetchUsers();
+                  fetchOnlineUsers();
+                }} 
+                className={styles.refreshBtn}
+                disabled={loadingUsers}
+              >
+                {loadingUsers ? 'Refreshing...' : 'Refresh'}
+              </button>
+              
+              {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
-            {!loadingUsers && !error && (
-              <>
-                {labStaffUsers.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <h4>No Lab Staff Members</h4>
-                    <p>No users with "Lab Staff" role found. Users can register directly and admins can approve them.</p>
-                  </div>
-                ) : (
+              
+              {!loadingUsers && !error && labStaffUsers.length > 0 && (
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Name</th>
+                      <th>Role</th>
                         <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Online</th>
+                      <th>Online Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {labStaffUsers.map(user => (
                         <tr key={user.id}>
-                          <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
+                        <td data-label="Role">
+                          <select
+                            value={getRoleName(user.role_id || user.role)}
+                            onChange={e => handleRoleChange(user, e.target.value)}
+                            className={styles.roleSelect}
+                          >
+                            <option value="ADMIN">Admin</option>
+                            <option value="LAB">Lab Staff</option>
+                            <option value="PRODUCT">Product</option>
+                            <option value="ACCOUNTS">Account</option>
+                            <option value="ALL_USERS">All Users (Limited)</option>
+                          </select>
+                        </td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
-                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
-                          <td data-label="Online">{getOnlineStatus(user)}</td>
+                        <td data-label="Online Status">{getOnlineStatus(user)}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
-                              Remove
+                            Delete
                             </button>
                           </td>
                         </tr>
@@ -434,48 +499,67 @@ const AdminManagementPage = () => {
                     </tbody>
                   </table>
                 )}
-              </>
+              
+              {!loadingUsers && !error && labStaffUsers.length === 0 && (
+                <div className={styles.emptyState}>
+                  <h4>No Lab Staff Users Found</h4>
+                  <p>There are no lab staff users in the system yet.</p>
+                </div>
             )}
           </div>
         )}
-        {activeTab === 'Product Team' && (
+
+          {/* Product Team Tab */}
+          {activeUserTab === 'Product Team' && (
           <div>
-            <h3>Product Team ({productTeamUsers.length} members)</h3>
-            <p>Manage product team members who can add and modify chemical inventory data.</p>
-            {loadingUsers && <div>Loading product team...</div>}
+              <h4>Product Team Users ({productTeamUsers.length} total)</h4>
+              <button 
+                onClick={() => {
+                  fetchUsers();
+                  fetchOnlineUsers();
+                }} 
+                className={styles.refreshBtn}
+                disabled={loadingUsers}
+              >
+                {loadingUsers ? 'Refreshing...' : 'Refresh'}
+              </button>
+              
+              {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
-            {!loadingUsers && !error && (
-              <>
-                {productTeamUsers.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <h4>No Product Team Members</h4>
-                    <p>No users with "Product" role found. Users can register directly and admins can approve them.</p>
-                  </div>
-                ) : (
+              
+              {!loadingUsers && !error && productTeamUsers.length > 0 && (
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Name</th>
+                      <th>Role</th>
                         <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Online</th>
+                      <th>Online Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {productTeamUsers.map(user => (
                         <tr key={user.id}>
-                          <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
+                        <td data-label="Role">
+                          <select
+                            value={getRoleName(user.role_id || user.role)}
+                            onChange={e => handleRoleChange(user, e.target.value)}
+                            className={styles.roleSelect}
+                          >
+                            <option value="ADMIN">Admin</option>
+                            <option value="LAB">Lab Staff</option>
+                            <option value="PRODUCT">Product</option>
+                            <option value="ACCOUNTS">Account</option>
+                            <option value="ALL_USERS">All Users (Limited)</option>
+                          </select>
+                        </td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
-                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
-                          <td data-label="Online">{getOnlineStatus(user)}</td>
+                        <td data-label="Online Status">{getOnlineStatus(user)}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
-                              Remove
+                            Delete
                             </button>
                           </td>
                         </tr>
@@ -483,48 +567,67 @@ const AdminManagementPage = () => {
                     </tbody>
                   </table>
                 )}
-              </>
+              
+              {!loadingUsers && !error && productTeamUsers.length === 0 && (
+                <div className={styles.emptyState}>
+                  <h4>No Product Team Users Found</h4>
+                  <p>There are no product team users in the system yet.</p>
+                </div>
             )}
           </div>
         )}
-        {activeTab === 'Account Team' && (
+
+          {/* Account Team Tab */}
+          {activeUserTab === 'Account Team' && (
           <div>
-            <h3>Account Team ({accountTeamUsers.length} members)</h3>
-            <p>Manage account team members who handle financial transactions and purchase orders.</p>
-            {loadingUsers && <div>Loading account team...</div>}
+              <h4>Account Team Users ({accountTeamUsers.length} total)</h4>
+              <button 
+                onClick={() => {
+                  fetchUsers();
+                  fetchOnlineUsers();
+                }} 
+                className={styles.refreshBtn}
+                disabled={loadingUsers}
+              >
+                {loadingUsers ? 'Refreshing...' : 'Refresh'}
+              </button>
+              
+              {loadingUsers && <div>Loading users...</div>}
             {error && <div className={styles.errorMsg}>{error}</div>}
-            {!loadingUsers && !error && (
-              <>
-                {accountTeamUsers.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <h4>No Account Team Members</h4>
-                    <p>No users with "Account" role found. Users can register directly and admins can approve them.</p>
-                  </div>
-                ) : (
+              
+              {!loadingUsers && !error && accountTeamUsers.length > 0 && (
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Name</th>
+                      <th>Role</th>
                         <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Online</th>
+                      <th>Online Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {accountTeamUsers.map(user => (
                         <tr key={user.id}>
-                          <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
+                        <td data-label="Role">
+                          <select
+                            value={getRoleName(user.role_id || user.role)}
+                            onChange={e => handleRoleChange(user, e.target.value)}
+                            className={styles.roleSelect}
+                          >
+                            <option value="ADMIN">Admin</option>
+                            <option value="LAB">Lab Staff</option>
+                            <option value="PRODUCT">Product</option>
+                            <option value="ACCOUNTS">Account</option>
+                            <option value="ALL_USERS">All Users (Limited)</option>
+                          </select>
+                        </td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
-                          <td data-label="Status">{user.is_approved ? 'Approved' : 'Pending'}</td>
-                          <td data-label="Online">{getOnlineStatus(user)}</td>
+                        <td data-label="Online Status">{getOnlineStatus(user)}</td>
                           <td data-label="Actions">
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
-                              Remove
+                            Delete
                             </button>
                           </td>
                         </tr>
@@ -532,13 +635,20 @@ const AdminManagementPage = () => {
                     </tbody>
                   </table>
                 )}
-              </>
+              
+              {!loadingUsers && !error && accountTeamUsers.length === 0 && (
+                <div className={styles.emptyState}>
+                  <h4>No Account Team Users Found</h4>
+                  <p>There are no account team users in the system yet.</p>
+                </div>
             )}
           </div>
         )}
-        {activeTab === 'Pending' && (
+
+          {/* Pending Tab */}
+          {activeUserTab === 'Pending' && (
           <div>
-            <h3>Pending Approvals ({pendingUsers.length} users)</h3>
+              <h4>Pending Approvals ({pendingUsers.length} total)</h4>
             <p>Users waiting for admin approval to access the system.</p>
             {pendingLoading && <div>Loading pending users...</div>}
             {pendingError && <div className={styles.errorMsg}>{pendingError}</div>}
@@ -553,33 +663,28 @@ const AdminManagementPage = () => {
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Phone</th>
-                        <th>Current Role</th>
-                        <th>Change Role</th>
+                          <th>Requested Role</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pendingUsers.map(user => (
                         <tr key={user.id}>
-                          <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Phone">{user.phone || 'Not provided'}</td>
-                          <td data-label="Current Role">{user.role.replace('_', ' ').toUpperCase()}</td>
-                          <td data-label="Change Role">
+                            <td data-label="Requested Role">
                             <select
-                              value={user.role}
+                                value={getRoleName(user.role_id || user.role)}
                               onChange={e => handleRoleChange(user, e.target.value)}
-                            >
-                              <option value="admin">Admin</option>
-                              <option value="lab_staff">Lab Staff</option>
-                              <option value="product">Product</option>
-                              <option value="account">Account</option>
-                              <option value="all_users">All Users (Limited)</option>
+                                className={styles.roleSelect}
+                              >
+                                <option value="ADMIN">Admin</option>
+                                <option value="LAB">Lab Staff</option>
+                                <option value="PRODUCT">Product</option>
+                                <option value="ACCOUNTS">Account</option>
+                                <option value="ALL_USERS">All Users (Limited)</option>
                             </select>
                           </td>
                           <td data-label="Actions">
@@ -587,7 +692,7 @@ const AdminManagementPage = () => {
                               Approve
                             </button>
                             <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
-                              Reject
+                                Delete
                             </button>
                           </td>
                         </tr>
@@ -599,9 +704,11 @@ const AdminManagementPage = () => {
             )}
           </div>
         )}
-        {activeTab === 'Online Users' && (
+
+          {/* Live Users Tab */}
+          {activeUserTab === 'Live Users' && (
           <div>
-            <h3>Online Users ({onlineUsers.length} users)</h3>
+              <h4>Live Users ({onlineUsers.length} total)</h4>
             <p>Users currently online (active in the last 5 minutes).</p>
             <button 
               onClick={fetchOnlineUsers} 
@@ -623,22 +730,34 @@ const AdminManagementPage = () => {
                   <table className={styles.userTable}>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Name</th>
+                          <th>Role</th>
                         <th>Email</th>
-                        <th>Role</th>
-                        <th>Last Seen</th>
+                          <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {onlineUsers.map(user => (
                         <tr key={user.id}>
-                          <td data-label="ID">{user.id}</td>
                           <td data-label="Name">{user.first_name} {user.last_name || ''}</td>
+                            <td data-label="Role">
+                              <select
+                                value={getRoleName(user.role_id || user.role)}
+                                onChange={e => handleRoleChange(user, e.target.value)}
+                                className={styles.roleSelect}
+                              >
+                                <option value="ADMIN">Admin</option>
+                                <option value="LAB">Lab Staff</option>
+                                <option value="PRODUCT">Product</option>
+                                <option value="ACCOUNTS">Account</option>
+                                <option value="ALL_USERS">All Users (Limited)</option>
+                              </select>
+                            </td>
                           <td data-label="Email">{user.email}</td>
-                          <td data-label="Role">{user.role.replace('_', ' ').toUpperCase()}</td>
-                          <td data-label="Last Seen">
-                            {user.last_seen ? new Date(user.last_seen).toLocaleString() : 'Never'}
+                            <td data-label="Actions">
+                              <button onClick={() => handleDelete(user)} className={styles.actionBtnDanger}>
+                                Delete
+                              </button>
                           </td>
                         </tr>
                       ))}
@@ -648,58 +767,8 @@ const AdminManagementPage = () => {
               </>
             )}
           </div>
-        )}
-        {activeTab === 'Logs' && (
-          <div>
-            <h3>Activity Logs ({logs.length} entries)</h3>
-            <p>System activity and user actions log.</p>
-            {logsLoading && <div>Loading logs...</div>}
-            {logsError && <div className={styles.errorMsg}>{logsError}</div>}
-            {!logsLoading && !logsError && (
-              <>
-                {logs.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <h4>No Activity Logs</h4>
-                    <p>No activity has been logged yet.</p>
-                  </div>
-                ) : (
-                  <table className={styles.userTable}>
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Description</th>
-                        <th>Timestamp</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {logs.map(log => (
-                        <tr key={log.id}>
-                          <td data-label="ID">{log.id}</td>
-                          <td data-label="User">
-                            {log.user_info ? (
-                              <span>
-                                {log.user_info.first_name} {log.user_info.last_name || ''} ({log.user_info.role.replace('_', ' ').toUpperCase()})
-                              </span>
-                            ) : log.user_email ? (
-                              <span>{log.user_email}</span>
-                            ) : (
-                              <span>User ID: {log.user_id}</span>
-                            )}
-                          </td>
-                          <td data-label="Action">{log.action}</td>
-                          <td data-label="Description">{log.description}</td>
-                          <td data-label="Timestamp">{new Date(log.timestamp).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </>
             )}
           </div>
-        )}
       </div>
 
       {/* Confirmation Modal */}
@@ -712,8 +781,28 @@ const AdminManagementPage = () => {
               <button onClick={hideModals} className={styles.modalBtnCancel}>
                 Cancel
               </button>
-              <button onClick={executeAction} className={styles.modalBtnConfirm}>
-                Confirm
+              <button onClick={handleModalAction} className={styles.modalBtnConfirm}>
+                {modalAction === 'delete' ? 'Delete User' : 
+                 modalAction === 'approve' ? 'Approve User' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Change Confirmation Modal */}
+      {showRoleChangeModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Confirm Role Change</h3>
+            <p>Are you sure you want to change {roleChangeData.user?.first_name} {roleChangeData.user?.last_name || ''}'s role to "{roleChangeData.newRole}"?</p>
+            <p><strong>Note:</strong> This action will also automatically approve the user if they were pending.</p>
+            <div className={styles.modalActions}>
+              <button onClick={() => setShowRoleChangeModal(false)} className={styles.modalBtnCancel}>
+                Cancel
+              </button>
+              <button onClick={confirmRoleChange} className={styles.modalBtnConfirmAction}>
+                Confirm Role Change
               </button>
             </div>
           </div>
@@ -721,7 +810,8 @@ const AdminManagementPage = () => {
       )}
 
       {/* Success Modal */}
-      {showSuccessModal && (
+      {/* This state variable was removed */}
+      {/* {showSuccessModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <h3>Success!</h3>
@@ -733,7 +823,47 @@ const AdminManagementPage = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
+
+      {/* App Info Modal */}
+      {/* This state variable was removed */}
+      {/* {showAppInfoModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Chemical Inventory Management System</h3>
+            <div className={styles.appInfoContent}>
+              <p><strong>Overview:</strong> A comprehensive chemical inventory management system designed for laboratories, research facilities, and chemical manufacturing companies.</p>
+              
+              <h4>Key Features:</h4>
+              <ul>
+                <li><strong>Chemical Inventory:</strong> Track chemical products, formulations, and safety data sheets</li>
+                <li><strong>Stock Management:</strong> Monitor stock levels, manage purchases, and track inventory movements</li>
+                <li><strong>User Management:</strong> Role-based access control with admin, lab staff, product team, and account team roles</li>
+                <li><strong>Safety Compliance:</strong> Manage safety data sheets, hazard classifications, and regulatory compliance</li>
+                <li><strong>Purchase Management:</strong> Track chemical purchases, suppliers, and costs</li>
+                <li><strong>Activity Logging:</strong> Comprehensive audit trail of all system activities</li>
+                <li><strong>Notifications:</strong> Alert system for low stock, expired chemicals, and safety violations</li>
+              </ul>
+              
+              <h4>User Roles:</h4>
+              <ul>
+                <li><strong>Admin:</strong> Full system access, user management, and system configuration</li>
+                <li><strong>Lab Staff:</strong> Chemical inventory management and safety data access</li>
+                <li><strong>Product Team:</strong> Product information management and reporting</li>
+                <li><strong>Account Team:</strong> Financial transactions and purchase order management</li>
+                <li><strong>Basic Users:</strong> Read-only access to inventory and basic reports</li>
+              </ul>
+              
+              <p><strong>Technology Stack:</strong> React frontend, FastAPI backend, PostgreSQL database, Firebase authentication</p>
+            </div>
+            <div className={styles.modalActions}>
+              <button onClick={hideModals} className={styles.modalBtnConfirm}>
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };

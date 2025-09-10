@@ -3,8 +3,8 @@
   max-width: 1400px;
   margin: 0 auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: var(--secondary-bg);
-  color: var(--primary-text);
+  background: var(--secondary-bg, #f8f9fa);
+  color: var(--primary-text, #212529);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -14,11 +14,12 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color, #e9ecef);
+  color: var(--primary-text, #212529);
 
   h2 {
     margin: 0;
-    color: var(--primary-text);
+    color: var(--primary-text, #212529);
     font-size: 28px;
     font-weight: 600;
   }
@@ -1278,4 +1279,407 @@
 
 .modalOverlay {
   padding: 10px;
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: var(--dark-bg, #1a1a1a);
+    color: var(--dark-text, #ffffff);
+  }
+  
+  // Ensure all text elements have proper contrast
+  * {
+    color: inherit;
+  }
+
+  .header {
+    border-color: var(--dark-border, #404040);
+    
+    h2 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .backBtn {
+    background: var(--dark-primary, #4dabf7);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-primary-hover, #339af0);
+    }
+  }
+
+  .error {
+    background: var(--dark-error, #ff6b6b);
+    color: var(--dark-text, #ffffff);
+    border-color: var(--dark-error, #ff6b6b);
+  }
+
+  .loading {
+    color: var(--dark-text-muted, #adb5bd);
+  }
+
+  .summaryCard {
+    background: var(--dark-card-bg, #2d2d2d);
+    border-color: var(--dark-border, #404040);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    
+    h3 {
+      color: var(--dark-text-muted, #adb5bd);
+    }
+    
+    .summaryValue {
+      color: var(--dark-text, #ffffff);
+    }
+    
+    .summaryLabel {
+      color: var(--dark-text-muted, #adb5bd);
+    }
+  }
+
+  .tabs {
+    background: var(--dark-light-bg, #404040);
+    border-color: var(--dark-border, #404040);
+  }
+
+  .tab {
+    background: var(--dark-card-bg, #2d2d2d);
+    color: var(--dark-text-muted, #adb5bd);
+    border-color: var(--dark-border, #404040);
+    
+    &:hover {
+      background: var(--dark-light-bg, #404040);
+      border-color: var(--dark-accent, #4dabf7);
+    }
+  }
+
+  .activeTab {
+    background: var(--dark-accent, #4dabf7);
+    color: var(--dark-text, #ffffff);
+    border-color: var(--dark-accent, #4dabf7);
+  }
+
+  .tabContent {
+    background: var(--dark-card-bg, #2d2d2d);
+    border-color: var(--dark-border, #404040);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .sectionHeader {
+    h3 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .addBtn {
+    background: var(--dark-success, #51cf66);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-success-hover, #40c057);
+    }
+  }
+
+  .transactionItem {
+    background: var(--dark-light-bg, #404040);
+    border-left-color: var(--dark-accent, #4dabf7);
+    
+    &:hover {
+      background: var(--dark-card-bg, #2d2d2d);
+    }
+  }
+
+  .transactionType {
+    color: var(--dark-text, #ffffff);
+  }
+
+  .transactionAmount {
+    color: var(--dark-success, #51cf66);
+  }
+
+  .transactionDetails {
+    color: var(--dark-text-muted, #adb5bd);
+  }
+
+  .transactionChemical {
+    color: var(--dark-text, #ffffff);
+  }
+
+  .transactionQuantity {
+    color: var(--dark-text-muted, #adb5bd);
+  }
+
+  .transactionDate {
+    color: var(--dark-text-muted, #adb5bd);
+  }
+
+  .transactionsTable {
+    table {
+      th {
+        background: var(--dark-light-bg, #404040);
+        color: var(--dark-text, #ffffff);
+        border-color: var(--dark-border, #404040);
+      }
+      
+      td {
+        color: var(--dark-text-muted, #adb5bd);
+        border-color: var(--dark-border, #404040);
+      }
+    }
+  }
+
+  .purchaseOrderCard {
+    background: var(--dark-light-bg, #404040);
+    border-left-color: var(--dark-accent, #4dabf7);
+    
+    &:hover {
+      background: var(--dark-card-bg, #2d2d2d);
+    }
+  }
+
+  .orderHeader {
+    h4 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .orderInfo {
+    p {
+      color: var(--dark-text-muted, #adb5bd);
+      
+      strong {
+        color: var(--dark-text, #ffffff);
+      }
+    }
+  }
+
+  .orderItems {
+    h5 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .orderItem {
+    color: var(--dark-text-muted, #adb5bd);
+    border-color: var(--dark-border, #404040);
+  }
+
+  .pendingItem {
+    background: var(--dark-warning, #ffd43b);
+    border-left-color: var(--dark-warning, #ffd43b);
+  }
+
+  .pendingInfo {
+    h4 {
+      color: var(--dark-text, #1a1a1a);
+    }
+    
+    p {
+      color: var(--dark-text, #1a1a1a);
+      
+      strong {
+        color: var(--dark-text, #1a1a1a);
+      }
+    }
+  }
+
+  .approveBtn {
+    background: var(--dark-success, #51cf66);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-success-hover, #40c057);
+    }
+  }
+
+  .rejectBtn {
+    background: var(--dark-error, #ff6b6b);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-error-hover, #ff5252);
+    }
+  }
+
+  .modalOverlay {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .modal {
+    background: var(--dark-card-bg, #2d2d2d);
+    border-color: var(--dark-border, #404040);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    
+    h3 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .formGroup {
+    label {
+      color: var(--dark-text, #ffffff);
+    }
+    
+    input, select, textarea {
+      background: var(--dark-input-bg, #404040);
+      border-color: var(--dark-border, #404040);
+      color: var(--dark-text, #ffffff);
+      
+      &:focus {
+        border-color: var(--dark-accent, #4dabf7);
+        box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+      }
+    }
+  }
+
+  .cancelBtn {
+    background: var(--dark-primary, #4dabf7);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-primary-hover, #339af0);
+    }
+  }
+
+  .submitBtn {
+    background: var(--dark-accent, #4dabf7);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-accent-hover, #339af0);
+    }
+  }
+
+  .itemsSection {
+    background: var(--dark-light-bg, #404040);
+    border-color: var(--dark-border, #404040);
+    
+    h4 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .itemRow {
+    color: var(--dark-text-muted, #adb5bd);
+    border-color: var(--dark-border, #404040);
+  }
+
+  .removeBtn {
+    background: var(--dark-error, #ff6b6b);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-error-hover, #ff5252);
+    }
+  }
+
+  .addItemSection {
+    background: var(--dark-card-bg, #2d2d2d);
+    border-color: var(--dark-border, #404040);
+    
+    h5 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .addItemBtn {
+    background: var(--dark-success, #51cf66);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-success-hover, #40c057);
+    }
+  }
+
+  .totalSection {
+    background: var(--dark-accent, #4dabf7);
+    
+    h4 {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .searchFilterSection {
+    background: var(--dark-card-bg, #2d2d2d);
+    border-color: var(--dark-border, #404040);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .searchIcon {
+    color: var(--dark-text-muted, #adb5bd);
+  }
+
+  .searchField {
+    background: var(--dark-input-bg, #404040);
+    border-color: var(--dark-border, #404040);
+    color: var(--dark-text, #ffffff);
+    
+    &:focus {
+      border-color: var(--dark-accent, #4dabf7);
+      box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+    }
+  }
+
+  .clearSearch {
+    color: var(--dark-text-muted, #adb5bd);
+    
+    &:hover {
+      background: var(--dark-light-bg, #404040);
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .filterToggle {
+    background: var(--dark-light-bg, #404040);
+    color: var(--dark-text-muted, #adb5bd);
+    border-color: var(--dark-border, #404040);
+    
+    &:hover {
+      background: var(--dark-card-bg, #2d2d2d);
+      border-color: var(--dark-accent, #4dabf7);
+    }
+    
+    &.active {
+      background: var(--dark-accent, #4dabf7);
+      color: var(--dark-text, #ffffff);
+      border-color: var(--dark-accent, #4dabf7);
+    }
+  }
+
+  .filterPanel {
+    border-color: var(--dark-border, #404040);
+  }
+
+  .filterGroup {
+    label {
+      color: var(--dark-text, #ffffff);
+    }
+  }
+
+  .rangeInputs, .dateInputs {
+    span {
+      color: var(--dark-text-muted, #adb5bd);
+    }
+  }
+
+  .rangeInput, .dateInput, .textInput, .selectInput {
+    background: var(--dark-input-bg, #404040);
+    border-color: var(--dark-border, #404040);
+    color: var(--dark-text, #ffffff);
+    
+    &:focus {
+      border-color: var(--dark-accent, #4dabf7);
+      box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+    }
+  }
+
+  .clearFilters {
+    background: var(--dark-primary, #4dabf7);
+    color: var(--dark-text, #ffffff);
+    
+    &:hover {
+      background: var(--dark-primary-hover, #339af0);
+    }
+  }
 } 

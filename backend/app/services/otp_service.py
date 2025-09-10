@@ -10,7 +10,7 @@ import redis
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioException
 from sqlalchemy.orm import Session
-from app.crud.user import get_user_by_phone
+
 from app.crud.activity_log import create_activity_log
 
 # Configure logging

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../firebase';
 
 // Use the same IP address that's working for the dashboard
-const API_BASE = 'http://192.168.1.16:8000';
+const API_BASE = 'http://192.168.1.12:8000';
 
 // Helper to get auth header
 const getAuthHeaders = async () => {

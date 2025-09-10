@@ -85,9 +85,9 @@ function MobileThemeToggle() {
   );
 }
 
-// Protected Route Component
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+// Protected Route Component (enhanced version)
+function ProtectedRouteWrapper({ children, allowedRoles = [], fallbackPath = '/dashboard' }) {
+  const { user, userInfo, loading } = useAuth();
   
   if (loading) {
     return <div>Loading...</div>;
@@ -95,6 +95,35 @@ function ProtectedRoute({ children }) {
   
   if (!user) {
     return <Navigate to="/" replace />;
+  }
+  
+  // If no specific roles are required, allow access
+  if (allowedRoles.length === 0) {
+    return <AppLayout>{children}</AppLayout>;
+  }
+  
+  // Check if user has required role
+  const userRole = userInfo?.role?.name || userInfo?.role;
+  const userRoleId = userInfo?.role_id;
+  
+  // Check both role name and role_id
+  const hasAccess = allowedRoles.some(role => {
+    if (typeof role === 'string') {
+      return userRole === role || userRole?.toLowerCase() === role.toLowerCase();
+    } else if (typeof role === 'number') {
+      return userRoleId === role;
+    }
+    return false;
+  });
+  
+  if (!hasAccess) {
+    console.log('Access denied:', {
+      userRole,
+      userRoleId,
+      allowedRoles,
+      fallbackPath
+    });
+    return <Navigate to={fallbackPath} replace />;
   }
   
   return <AppLayout>{children}</AppLayout>;
@@ -131,57 +160,158 @@ function AppRoutes() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper>
             <DashboardPage />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
+      {/* ADMIN ONLY ROUTES */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
             <AdminManagementPage />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
       <Route
         path="/chemicals"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
             <ChemicalsDashboard />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
       <Route
         path="/chemicals/:id"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
             <ChemicalDetailPage />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
       <Route
         path="/chemical-purchase-history/:id"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
             <ChemicalPurchaseHistoryPage />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
+      <Route
+        path="/stock"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
+            <div style={{ padding: '20px' }}>
+              <h2>Stock Management</h2>
+              <p>Stock management features are coming soon. This will include:</p>
+              <ul>
+                <li>Stock level monitoring</li>
+                <li>Purchase order management</li>
+                <li>Inventory movement tracking</li>
+                <li>Supplier management</li>
+              </ul>
+            </div>
+          </ProtectedRouteWrapper>
+        }
+      />
+      <Route
+        path="/alerts"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
+            <div style={{ padding: '20px' }}>
+              <h2>Alerts & Monitoring</h2>
+              <p>Alert system features are coming soon. This will include:</p>
+              <ul>
+                <li>Low stock alerts</li>
+                <li>Expired chemical notifications</li>
+                <li>Safety violation alerts</li>
+                <li>Custom alert rules</li>
+              </ul>
+            </div>
+          </ProtectedRouteWrapper>
+        }
+      />
+      <Route
+        path="/activity-log"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
+            <div style={{ padding: '20px' }}>
+              <h2>Activity Log</h2>
+              <p>Activity logging features are coming soon. This will include:</p>
+              <ul>
+                <li>User activity tracking</li>
+                <li>System event logging</li>
+                <li>Audit trail management</li>
+                <li>Export and reporting</li>
+              </ul>
+            </div>
+          </ProtectedRouteWrapper>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['ADMIN', 'admin', 1]}>
+            <div style={{ padding: '20px' }}>
+              <h2>System Settings</h2>
+              <p>System configuration features are coming soon. This will include:</p>
+              <ul>
+                <li>Application preferences</li>
+                <li>Security settings</li>
+                <li>User role configurations</li>
+                <li>System parameters</li>
+              </ul>
+            </div>
+          </ProtectedRouteWrapper>
+        }
+      />
+
+      {/* ACCOUNT TEAM ROUTES */}
       <Route
         path="/account"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper allowedRoles={['ACCOUNTS', 'accounts', 'ACCOUNT_TEAM', 'account_team', 4]}>
             <AccountTeamDashboard />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
       <Route
+        path="/account/notifications"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['ACCOUNTS', 'accounts', 'ACCOUNT_TEAM', 'account_team', 4]}>
+            <NotificationDashboard />
+          </ProtectedRouteWrapper>
+        }
+      />
+
+      {/* LAB TEAM ROUTES */}
+      <Route
+        path="/lab/notifications"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['LAB', 'lab', 'LAB_STAFF', 'lab_staff', 2]}>
+            <NotificationDashboard />
+          </ProtectedRouteWrapper>
+        }
+      />
+
+      {/* PRODUCT TEAM ROUTES */}
+      <Route
+        path="/product/notifications"
+        element={
+          <ProtectedRouteWrapper allowedRoles={['PRODUCT', 'product', 'PRODUCT_TEAM', 'product_team', 3]}>
+            <NotificationDashboard />
+          </ProtectedRouteWrapper>
+        }
+      />
+
+      {/* SHARED ROUTES (All authenticated users) */}
+      <Route
         path="/notifications"
         element={
-          <ProtectedRoute>
+          <ProtectedRouteWrapper>
             <NotificationDashboard />
-          </ProtectedRoute>
+          </ProtectedRouteWrapper>
         }
       />
     </Routes>

@@ -1,0 +1,743 @@
+.formulationsManagement {
+  .tabHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+
+    h2 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .headerActions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .refreshBtn, .uploadBtn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .refreshBtn {
+      background: #6b7280;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #4b5563;
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+    }
+
+    .uploadBtn {
+      background: #10b981;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #059669;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  // Excel Preview Styles
+  .excelPreview {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .previewHeader {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-bottom: 1px solid #e2e8f0;
+
+      .previewIcon {
+        color: #0ea5e9;
+      }
+
+      .previewInfo {
+        h3 {
+          margin: 0 0 4px 0;
+          color: #0c4a6e;
+          font-size: 20px;
+          font-weight: 600;
+        }
+
+        p {
+          margin: 0;
+          color: #0369a1;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .previewContent {
+      padding: 24px;
+
+      .section {
+        margin-bottom: 24px;
+
+        h4 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 0 16px 0;
+          color: #1e293b;
+          font-size: 16px;
+          font-weight: 600;
+
+          .alertIcon {
+            color: #f59e0b;
+          }
+
+          .checkIcon {
+            color: #10b981;
+          }
+        }
+      }
+
+      .productSummary {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+
+        h4 {
+          margin: 0 0 16px 0;
+          color: #1e293b;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        .summaryDetails {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+
+          .summaryItem {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .label {
+              color: #6b7280;
+              font-weight: 500;
+            }
+
+            .value {
+              color: #1e293b;
+              font-weight: 600;
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .chemicalsList {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        .chemicalItem {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+
+          .chemicalName {
+            font-weight: 500;
+            color: #1e293b;
+          }
+
+          .chemicalQuantity {
+            color: #6b7280;
+            font-size: 14px;
+          }
+
+          .chemicalStatus {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+          }
+        }
+      }
+
+      .infoText {
+        color: #6b7280;
+        font-size: 14px;
+        margin: 0;
+        font-style: italic;
+      }
+
+      .componentsTable {
+        overflow-x: auto;
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+
+          th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+          }
+
+          th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+          }
+
+          td {
+            color: #1f2937;
+            font-size: 14px;
+          }
+
+          .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+
+            &.existing {
+              background: #dcfce7;
+              color: #166534;
+            }
+
+            &.new {
+              background: #fef3c7;
+              color: #92400e;
+            }
+          }
+        }
+      }
+    }
+
+    .previewActions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 20px 24px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+
+      .cancelBtn, .approveBtn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cancelBtn {
+        background: #6b7280;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #4b5563;
+        }
+
+        &:disabled {
+          background: #9ca3af;
+          cursor: not-allowed;
+        }
+      }
+
+      .approveBtn {
+        background: #10b981;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #059669;
+        }
+
+        &:disabled {
+          background: #9ca3af;
+          cursor: not-allowed;
+        }
+
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid transparent;
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      }
+    }
+  }
+
+  // Table Styles
+  .tableContainer {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .dataTable {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 16px;
+        text-align: left;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      td {
+        color: #1f2937;
+        font-size: 14px;
+      }
+
+      tbody tr {
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #f8fafc;
+        }
+      }
+    }
+  }
+
+  .productInfo, .chemicalInfo {
+    .productName, .chemicalName {
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .manufacturedBadge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+  }
+
+  .componentStatus {
+    .existingStatus {
+      color: #059669;
+      font-weight: 500;
+    }
+
+    .missingStatus {
+      color: #dc2626;
+      font-weight: 500;
+    }
+  }
+
+  .actionButtons {
+    display: flex;
+    gap: 8px;
+
+    button {
+      padding: 6px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &.deleteBtn {
+        background: #ef4444;
+        color: white;
+
+        &:hover {
+          background: #dc2626;
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+
+  .loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6b7280;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  }
+
+  .noData {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+
+    p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+  }
+
+  // Modal Styles
+  .modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    animation: modalSlideIn 0.3s ease;
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 0 24px;
+    margin-bottom: 24px;
+
+    h3 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .closeBtn {
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f3f4f6;
+      }
+    }
+  }
+
+  .modalContent {
+    padding: 0 24px 24px 24px;
+
+    .uploadInfo {
+      text-align: center;
+      margin-bottom: 24px;
+
+      .infoIcon {
+        color: #10b981;
+        margin-bottom: 16px;
+      }
+
+      h4 {
+        margin: 0 0 12px 0;
+        color: #1e293b;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0 0 16px 0;
+        color: #6b7280;
+        font-size: 14px;
+      }
+
+      ul {
+        text-align: left;
+        margin: 0;
+        padding-left: 20px;
+        color: #6b7280;
+        font-size: 14px;
+
+        li {
+          margin-bottom: 4px;
+        }
+      }
+    }
+
+    .dropZone {
+      border: 2px dashed #d1d5db;
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+
+      &.dragActive {
+        border-color: #10b981;
+        background-color: #f0fdf4;
+      }
+
+      .fileInput {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .dropContent {
+        .uploadIcon {
+          color: #6b7280;
+          margin-bottom: 16px;
+        }
+
+        .dropText {
+          margin: 0 0 8px 0;
+          color: #374151;
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        .dropSubtext {
+          margin: 0 0 16px 0;
+          color: #6b7280;
+          font-size: 14px;
+        }
+
+        .browseBtn {
+          background: #3b82f6;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+          }
+        }
+
+        .fileTypes {
+          margin: 16px 0 0 0;
+          color: #9ca3af;
+          font-size: 12px;
+        }
+      }
+    }
+
+    .fileSelected {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+
+      .fileInfo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #166534;
+
+        .fileName {
+          font-weight: 500;
+        }
+
+        .fileSize {
+          color: #059669;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .errorMessage {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      color: #dc2626;
+      font-size: 14px;
+    }
+  }
+
+  .modalActions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e5e7eb;
+
+    .cancelBtn, .uploadBtn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .cancelBtn {
+      background: #6b7280;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #4b5563;
+      }
+
+      &:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+    }
+
+    .uploadBtn {
+      background: #10b981;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #059669;
+      }
+
+      &:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .tabHeader {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+
+      .headerActions {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .excelPreview {
+      .previewContent {
+        .productSummary {
+          .summaryDetails {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+
+      .previewActions {
+        flex-direction: column;
+      }
+    }
+
+    .tableContainer {
+      overflow-x: auto;
+
+      .dataTable {
+        min-width: 800px;
+      }
+    }
+
+    .modal {
+      max-width: 95vw;
+    }
+  }
+}
+

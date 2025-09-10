@@ -1,0 +1,374 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--primary-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+
+  h3 {
+    margin: 0;
+    color: var(--primary-text, #111827);
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--secondary-text, #6b7280);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: var(--hover-bg, #f3f4f6);
+    color: var(--primary-text, #111827);
+  }
+}
+
+.form {
+  padding: 24px;
+}
+
+.formSection {
+  margin-bottom: 32px;
+
+  h4 {
+    margin: 0 0 20px 0;
+    color: var(--primary-text, #111827);
+    font-size: 18px;
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-color, #3b82f6);
+  }
+}
+
+.formGroup {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--primary-text, #111827);
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    background: var(--input-bg, #ffffff);
+    color: var(--primary-text, #111827);
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color, #3b82f6);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &.error {
+      border-color: var(--error-color, #ef4444);
+    }
+  }
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.errorText {
+  color: var(--error-color, #ef4444);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.productInfo {
+  background: var(--secondary-bg, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+
+  h5 {
+    margin: 0 0 16px 0;
+    color: var(--primary-text, #111827);
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-weight: 500;
+    color: var(--secondary-text, #6b7280);
+    font-size: 14px;
+  }
+
+  .value {
+    color: var(--primary-text, #111827);
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.timeInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+  }
+
+  .timeUnit {
+    color: var(--secondary-text, #6b7280);
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+.timeDisplay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-color, #3b82f6);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.teamLogic {
+  .logicCard {
+    background: var(--accent-bg, #eff6ff);
+    border: 1px solid var(--accent-border, #bfdbfe);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .logicHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .logicIcon {
+      color: var(--accent-color, #3b82f6);
+    }
+
+    .logicTitle {
+      font-weight: 600;
+      color: var(--primary-text, #111827);
+      font-size: 16px;
+    }
+  }
+
+  .logicContent {
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: var(--primary-text, #111827);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .logicRule {
+      font-style: italic;
+      color: var(--secondary-text, #6b7280);
+      font-size: 13px;
+    }
+  }
+}
+
+.teamBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 8px;
+
+  &.lab_staff {
+    background: var(--success-bg, #d1fae5);
+    color: var(--success-text, #065f46);
+  }
+
+  &.product_team {
+    background: var(--warning-bg, #fef3c7);
+    color: var(--warning-text, #92400e);
+  }
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.cancelBtn {
+  background: var(--secondary-bg, #f3f4f6);
+  color: var(--primary-text, #111827);
+  border: 1px solid var(--border-color, #d1d5db);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--border-color, #e5e7eb);
+  }
+}
+
+.submitBtn {
+  background: var(--success-color, #10b981);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: var(--success-hover, #059669);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .modal {
+    margin: 10px;
+    max-height: 95vh;
+  }
+
+  .form {
+    padding: 16px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .formActions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+
+  .productInfo {
+    padding: 16px;
+  }
+
+  .infoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .modal {
+    background: var(--primary-bg-dark, #1f2937);
+    color: var(--primary-text-dark, #f9fafb);
+  }
+
+  .formSection h4 {
+    color: var(--primary-text-dark, #f9fafb);
+    border-bottom-color: var(--accent-color-dark, #60a5fa);
+  }
+
+  .productInfo {
+    background: var(--secondary-bg-dark, #374151);
+    border-color: var(--border-color-dark, #4b5563);
+  }
+
+  .formGroup label {
+    color: var(--primary-text-dark, #f9fafb);
+  }
+
+  .formGroup input,
+  .formGroup select {
+    background: var(--input-bg-dark, #374151);
+    color: var(--primary-text-dark, #f9fafb);
+    border-color: var(--border-color-dark, #4b5563);
+  }
+
+  .teamLogic .logicCard {
+    background: var(--accent-bg-dark, #1e3a8a);
+    border-color: var(--accent-border-dark, #3b82f6);
+  }
+
+  .teamLogic .logicContent p {
+    color: var(--primary-text-dark, #f9fafb);
+  }
+
+  .teamLogic .logicContent .logicRule {
+    color: var(--secondary-text-dark, #9ca3af);
+  }
+}
+

@@ -3,7 +3,7 @@ import { auth } from '../firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 import { Alert, AppState } from 'react-native';
 
-const API_BASE = 'http://192.168.1.16:8000';
+const API_BASE = 'http://192.168.1.12:8000';
 
 const AuthContext = createContext();
 

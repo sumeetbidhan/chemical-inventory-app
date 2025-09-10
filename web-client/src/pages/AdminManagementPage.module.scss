@@ -1,44 +1,80 @@
+// Admin Page Container
 .adminPageContainer {
+  padding: 2rem;
   max-width: 1200px;
-  margin: 40px auto;
-  padding: 2rem 2.5rem;
-  background: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 4px 24px var(--shadow-color);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.tabs {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: var(--tertiary-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  flex-wrap: wrap;
-}
-
-.tab {
-  padding: 0.8rem 1.5rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  color: var(--secondary-text);
-  transition: all 0.3s ease;
-  font-weight: 500;
+  margin: 0 auto;
   
-  &:hover {
-    background: var(--tertiary-bg);
-    border-color: var(--accent-color);
-    color: var(--primary-text);
+  // Ensure proper contrast in both themes
+  --table-border: var(--border-color, #dee2e6);
+  --table-shadow: var(--shadow-color, rgba(0, 0, 0, 0.1));
+  --text-primary: var(--primary-text, #212529);
+  --text-secondary: var(--secondary-text, #6c757d);
+  --bg-card: var(--card-bg, #ffffff);
+  --bg-tertiary: var(--tertiary-bg, #e9ecef);
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+  
+  h2 {
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    font-weight: 600;
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
   }
 }
 
-.activeTab {
+// User Management Styles
+.userManagementContainer {
+  .userManagementTabs {
+  display: flex;
+    gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+    background: var(--bg-tertiary);
+  border-radius: 8px;
+    border: 1px solid var(--table-border);
+  flex-wrap: wrap;
+    
+    @media (max-width: 768px) {
+      gap: 0.25rem;
+      padding: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .userTab {
+      padding: 0.6rem 1.2rem;
+      background: var(--bg-card);
+      border: 1px solid var(--table-border);
+  border-radius: 6px;
+      font-size: 0.9rem;
+  cursor: pointer;
+      color: var(--text-secondary);
+  transition: all 0.3s ease;
+  font-weight: 500;
+      white-space: nowrap;
+      
+      @media (max-width: 768px) {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+      }
+  
+  &:hover {
+        background: var(--bg-tertiary);
+    border-color: var(--accent-color);
+        color: var(--text-primary);
+  }
+}
+
+    .activeUserTab {
   background: var(--accent-color);
   color: #fff;
   font-weight: 600;
@@ -49,80 +85,202 @@
     opacity: 0.9;
   }
 }
-
-.tabContent {
-  background: var(--card-bg);
-  border-radius: 8px;
-  padding: 2rem 1.5rem;
-  min-height: 300px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
+  }
+  
+  .userManagementContent {
+    h4 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      font-size: 1.3rem;
+      
+      @media (max-width: 768px) {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+      }
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+      color: var(--text-secondary);
+      
+      @media (max-width: 768px) {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+    }
+  }
 }
 
+// User Table Styles
 .userTable {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  background: var(--card-bg);
+  background: var(--bg-card);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px var(--shadow-color);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.userTable th, .userTable td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--table-shadow);
+  border: 1px solid var(--table-border);
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+  
+  th, td {
+    padding: 1rem;
   text-align: left;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.userTable th {
-  background: var(--tertiary-bg);
+    border-bottom: 1px solid var(--table-border);
+    
+    @media (max-width: 768px) {
+      padding: 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+  
+  th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    @media (max-width: 768px) {
+      font-size: 0.75rem;
+      letter-spacing: 0.25px;
+    }
+  }
+  
+  td {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    
+    @media (max-width: 768px) {
+      font-size: 0.8rem;
+    }
+  }
+  
+  tr:hover {
+    background: var(--bg-tertiary);
+  }
+  
+  // Mobile responsive table
+  @media (max-width: 768px) {
+    thead {
+      display: none;
+    }
+    
+    tbody, tr, td {
+      display: block;
+      width: 100%;
+    }
+    
+    tr {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--table-border);
+      border-radius: 6px;
+      box-shadow: 0 1px 3px var(--table-shadow);
+    }
+    
+    td {
+      border: none;
+      padding: 0.5rem 0;
+      text-align: left;
+      position: relative;
+      padding-left: 40%;
+      
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 35%;
   font-weight: 600;
-  color: var(--primary-text);
+        color: var(--text-primary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
 }
 
-.userTable td {
-  color: var(--secondary-text);
-}
-
-.userTable tr:last-child td {
-  border-bottom: none;
-}
-
-.userTable tr:hover {
-  background: var(--tertiary-bg);
-}
-
-.actionBtn {
-  background: var(--success-color);
-  color: #fff;
-  border: none;
+// Role Select Styles
+.roleSelect {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  padding: 0.4rem 0.9rem;
-  margin-right: 0.5rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 0.95rem;
   transition: all 0.3s ease;
+  min-width: 120px;
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+    min-width: 100px;
+  }
   
   &:hover {
-    background: var(--success-color);
+    border-color: var(--accent-color);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+  }
+  
+  option {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 0.5rem;
+  }
+}
+
+// Action Buttons
+.actionBtn {
+  padding: 0.5rem 1rem;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  &:hover {
+    background: var(--accent-color);
     opacity: 0.9;
     transform: translateY(-1px);
   }
 }
 
 .actionBtnDanger {
+  padding: 0.5rem 1rem;
   background: var(--error-color);
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 4px;
-  padding: 0.4rem 0.9rem;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
   
   &:hover {
     background: var(--error-color);
@@ -131,16 +289,25 @@
   }
 }
 
+// Refresh Button
 .refreshBtn {
+  padding: 0.5rem 1rem;
   background: var(--accent-color);
-  color: #fff;
+  color: white;
   border: none;
   border-radius: 4px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+  }
   
   &:hover {
     background: var(--accent-color);
@@ -149,122 +316,96 @@
   }
   
   &:disabled {
-    background: var(--secondary-text);
+    opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
 }
 
+// Online Status
 .onlineStatus {
   color: var(--success-color);
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .offlineStatus {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.inviteForm {
-  width: 100%;
-  max-width: 400px;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-  padding: 1.5rem;
-  background: var(--tertiary-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-  
-  input, select {
-    padding: 0.75rem;
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    background: var(--input-bg);
-    color: var(--input-text);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    
-    &:focus {
-      outline: none;
-      border-color: var(--accent-color);
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-  }
-  
-  button {
-    background: var(--accent-color);
-    color: #fff;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    
-    &:hover {
-      background: var(--accent-color);
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-    
-    &:disabled {
-      background: var(--secondary-text);
-      cursor: not-allowed;
-      transform: none;
-    }
-  }
+  align-items: center;
+  gap: 0.25rem;
 }
 
+// Error Message
 .errorMsg {
-  margin-top: 1rem;
-  color: #fff;
-  background: var(--error-color);
-  padding: 0.75rem;
-  border-radius: 6px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid var(--error-color);
-  opacity: 0.9;
+  color: var(--error-color);
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+    padding: 0.75rem;
+    border-radius: 4px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+    margin: 0.75rem 0;
+  }
 }
 
 .successMsg {
-  margin-top: 1rem;
-  color: #fff;
-  background: var(--success-color);
+  color: var(--success-color);
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
   padding: 0.75rem;
-  border-radius: 6px;
-  width: 100%;
-  text-align: center;
-  border: 1px solid var(--success-color);
-  opacity: 0.9;
+    border-radius: 4px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+    margin: 0.75rem 0;
+  }
 }
 
+// Empty State Styles
 .emptyState {
   text-align: center;
-  padding: 40px;
-  background: var(--tertiary-bg);
+  padding: 3rem 2rem;
+  background: var(--bg-tertiary);
   border-radius: 8px;
-  border: 2px dashed var(--border-color);
-  margin: 20px 0;
-  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+  }
   
   h4 {
-    margin: 0 0 12px 0;
-    color: var(--primary-text);
-    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
     font-weight: 600;
+    
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
   }
   
   p {
+    color: var(--text-secondary);
     margin: 0;
-    color: var(--secondary-text);
-    font-size: 14px;
     line-height: 1.5;
+    
+    @media (max-width: 768px) {
+      font-size: 0.9rem;
+    }
   }
 }
 
@@ -277,325 +418,196 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
+  padding: 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 }
 
 .modal {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 24px;
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 8px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 8px 32px var(--shadow-color);
+  box-shadow: 0 4px 20px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    width: 95%;
+    max-width: none;
+  }
   
   h3 {
-    margin: 0 0 16px 0;
-    color: var(--primary-text);
-    font-size: 20px;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.3rem;
     font-weight: 600;
+    
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+    }
   }
   
   p {
-    margin: 0 0 24px 0;
-    color: var(--secondary-text);
-    line-height: 1.5;
-    font-size: 16px;
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    
+    @media (max-width: 768px) {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
   }
 }
 
 .modalActions {
   display: flex;
-  gap: 12px;
+  gap: 1rem;
   justify-content: flex-end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 }
 
 .modalBtnCancel {
-  padding: 10px 20px;
-  background: var(--secondary-bg);
-  color: var(--primary-text);
+  padding: 0.5rem 1rem;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
   font-weight: 500;
-  transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
   
   &:hover {
-    background: var(--hover-bg);
+    background: var(--border-color);
+    color: var(--text-primary);
   }
 }
 
 .modalBtnConfirm {
-  padding: 10px 20px;
-  background: var(--accent-color);
+  padding: 0.5rem 1rem;
+  background: var(--error-color);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
   font-weight: 500;
-  transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
   
   &:hover {
+    background: var(--error-color);
     opacity: 0.9;
-    transform: translateY(-1px);
   }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .adminPageContainer {
-    margin: 10px;
-    padding: 16px 12px;
-    margin-top: 20px;
-  }
-  
-  .tabs {
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 8px;
-  }
-  
-  .tab {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .activeTab {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .tabContent {
-    padding: 16px;
-    min-height: auto;
-  }
-  
-  .userTable {
-    font-size: 12px;
-    overflow-x: auto;
-    
-    th, td {
-      padding: 8px 6px;
-      font-size: 11px;
-      white-space: nowrap;
-    }
-    
-    th {
-      font-size: 12px;
-    }
-    
-    // Make table scrollable horizontally
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
-    
-    thead, tbody, tr, th, td {
-      display: block;
-    }
-    
-    thead tr {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-    }
-    
-    tr {
-      border: 1px solid var(--border-color);
-      margin-bottom: 8px;
-      border-radius: 6px;
-      padding: 8px;
-      background: var(--card-bg);
-    }
-    
-    td {
+.modalBtnConfirmAction {
+  padding: 0.5rem 1rem;
+  background: var(--accent-color);
+  color: white;
       border: none;
-      position: relative;
-      padding-left: 50%;
-      text-align: left;
-      white-space: normal;
-      
-      &:before {
-        content: attr(data-label);
-        position: absolute;
-        left: 8px;
-        width: 45%;
-        font-weight: 600;
-        color: var(--primary-text);
-      }
-    }
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
   
-  .actionBtn, .actionBtnDanger {
-    padding: 4px 8px;
-    font-size: 10px;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    min-width: 60px;
-  }
-  
-  .inviteForm {
-    max-width: 100%;
-    gap: 12px;
-    margin-top: 12px;
-    padding: 12px;
-    
-    input, select {
-      padding: 8px;
-      font-size: 12px;
-    }
-    
-    button {
-      padding: 8px 16px;
-      font-size: 12px;
-    }
-  }
-  
-  .errorMsg, .successMsg {
-    margin-top: 12px;
-    padding: 8px;
-    font-size: 12px;
-  }
-  
-  .emptyState {
-    padding: 24px 16px;
-    margin: 16px 0;
-    
-    h4 {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    
-    p {
-      font-size: 12px;
-    }
-  }
-  
-  .modal {
-    margin: 20px;
-    padding: 20px;
-    
-    h3 {
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-    
-    p {
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-  }
-  
-  .modalActions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .modalBtnCancel,
-  .modalBtnConfirm {
-    width: 100%;
-    padding: 12px 20px;
-    font-size: 16px;
+  &:hover {
+    background: var(--accent-color);
+    opacity: 0.9;
   }
 }
 
+// Loading States
+.loadingState {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+// Additional Responsive Improvements
 @media (max-width: 480px) {
   .adminPageContainer {
-    margin: 8px;
-    padding: 12px 8px;
-    margin-top: 16px;
+    padding: 0.5rem;
   }
   
-  .tabs {
-    gap: 6px;
-    margin-bottom: 12px;
-    padding: 6px;
-  }
-  
-  .tab, .activeTab {
-    padding: 5px 10px;
-    font-size: 11px;
-  }
-  
-  .tabContent {
-    padding: 12px;
-  }
-  
-  .userTable {
-    font-size: 11px;
-    
-    th, td {
-      padding: 6px 4px;
-      font-size: 10px;
-    }
-    
-    th {
-      font-size: 11px;
-    }
-    
-    tr {
-      margin-bottom: 6px;
-      padding: 6px;
-    }
-    
-    td {
-      padding-left: 45%;
-      font-size: 10px;
-      
-      &:before {
-        font-size: 10px;
-        left: 6px;
-        width: 40%;
+  .userManagementContainer {
+    .userManagementTabs {
+      .userTab {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.75rem;
+        min-width: 80px;
       }
     }
   }
   
-  .actionBtn, .actionBtnDanger {
-    padding: 3px 6px;
-    font-size: 9px;
-    margin-right: 3px;
-    margin-bottom: 3px;
-    min-width: 50px;
-  }
-  
-  .inviteForm {
-    gap: 8px;
-    margin-top: 8px;
-    padding: 8px;
-    
-    input, select {
-      padding: 6px;
-      font-size: 11px;
-    }
-    
-    button {
-      padding: 6px 12px;
-      font-size: 11px;
+  .userTable {
+    td {
+      padding-left: 45%;
+      
+      &::before {
+        width: 40%;
+        font-size: 0.7rem;
+      }
     }
   }
   
-  .errorMsg, .successMsg {
-    margin-top: 8px;
-    padding: 6px;
-    font-size: 11px;
+  .roleSelect {
+    min-width: 80px;
+    font-size: 0.75rem;
   }
   
-  .emptyState {
-    padding: 16px 12px;
-    margin: 12px 0;
-    
-    h4 {
-      font-size: 14px;
-      margin-bottom: 6px;
+  .actionBtn, .actionBtnDanger, .refreshBtn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+// Print styles for better visibility
+@media print {
+  .userManagementTabs {
+    display: none !important;
+  }
+  
+  .userTable {
+    th, td {
+      border: 1px solid #000;
+      padding: 0.5rem;
     }
-    
-    p {
-      font-size: 11px;
-    }
+  }
+  
+  .actionBtn, .actionBtnDanger, .refreshBtn {
+    display: none !important;
   }
 } 

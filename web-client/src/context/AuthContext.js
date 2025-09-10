@@ -80,25 +80,27 @@ export const AuthProvider = ({ children }) => {
       if (statusRes.ok) {
         const userData = await statusRes.json();
         console.log('User status received:', userData);
+        console.log('User role:', userData.role);
+        console.log('User role type:', typeof userData.role);
         setUserInfo(userData);
         setBackendAvailable(true);
         
-        // If user is approved, also fetch full dashboard data
+        // If user is approved, also fetch full user data
         if (userData.is_approved) {
-          console.log('User is approved, fetching dashboard data...');
+          console.log('User is approved, fetching full user data...');
           try {
-            const dashboardRes = await fetch(`${API_BASE}/user/dashboard`, {
+            const userRes = await fetch(`${API_BASE}/user/me`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (dashboardRes.ok) {
-              const dashboardData = await dashboardRes.json();
-              console.log('Dashboard data received:', dashboardData);
-              // Merge dashboard data with user data
-              setUserInfo({ ...userData, ...dashboardData });
+            if (userRes.ok) {
+              const fullUserData = await userRes.json();
+              console.log('Full user data received:', fullUserData);
+              // Merge full user data with status data
+              setUserInfo({ ...userData, ...fullUserData });
             }
-          } catch (dashboardError) {
-            console.warn('Failed to fetch dashboard data:', dashboardError);
-            // Dashboard fetch failed, but we still have basic user info
+          } catch (userError) {
+            console.warn('Failed to fetch full user data:', userError);
+            // User fetch failed, but we still have basic user info
           }
         } else {
           console.log('User is not approved yet');
@@ -121,11 +123,18 @@ export const AuthProvider = ({ children }) => {
   // Set user online in backend
   const setUserOnline = async (firebaseUser) => {
     try {
-      const token = await firebaseUser.getIdToken();
-      await fetch(`${API_BASE}/user/online`, {
+      // Force refresh the token to get a fresh one
+      const token = await firebaseUser.getIdToken(true);
+      const response = await fetch(`${API_BASE}/user/online`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+      if (!response.ok) {
+        console.warn('Failed to set user online:', response.status, response.statusText);
+        return;
+      }
+      
       console.log('User set as online in backend');
     } catch (err) {
       console.warn('Failed to set user online:', err);
