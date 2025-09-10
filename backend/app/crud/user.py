@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
-from app.models.user import User, UserRole
+from sqlalchemy.orm import Session, joinedload
+from app.models.user import User
+from app.models.role import Role
 from app.schema.user import UserCreate, UserUpdate
 from typing import Optional, List
 from datetime import datetime, timedelta
@@ -15,27 +16,32 @@ def get_user_by_uid(db: Session, uid: str) -> Optional[User]:
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email).first()
 
-def get_user_by_phone(db: Session, phone: str) -> Optional[User]:
-    return db.query(User).filter(User.phone == phone).first()
+
+
+def get_user(db: Session, user_id: int) -> Optional[User]:
+    return db.query(User).filter(User.id == user_id).first()
+
+def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
+    return db.query(User).offset(skip).limit(limit).all()
 
 def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
 def create_user(db: Session, user: UserCreate) -> User:
-    logger.info(f"[{datetime.now().isoformat()}] Creating new user: {user.email} with role {user.role}")
+    logger.info(f"[{datetime.now().isoformat()}] Creating new user: {user.email} with role_id {user.role_id}")
     
     db_user = User(
         uid=user.uid,
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        phone=user.phone,
-        role=user.role,
+        role_id=user.role_id,
         is_approved=False  # Always create as pending, admin must approve
     )
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    # Don't commit here - let the calling function handle the commit
+    # db.commit()
+    # db.refresh(db_user)
     
     logger.info(f"[{datetime.now().isoformat()}] User created successfully: {user.email} (ID: {db_user.id})")
     return db_user
@@ -104,7 +110,7 @@ def delete_user(db: Session, user_id: int) -> bool:
     return True
 
 def get_all_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
-    users = db.query(User).offset(skip).limit(limit).all()
+    users = db.query(User).options(joinedload(User.role)).offset(skip).limit(limit).all()
     logger.info(f"[{datetime.now().isoformat()}] Retrieved {len(users)} users (skip: {skip}, limit: {limit})")
     return users
 
@@ -113,13 +119,13 @@ def get_pending_users(db: Session) -> List[User]:
     logger.info(f"[{datetime.now().isoformat()}] Retrieved {len(pending_users)} pending users")
     return pending_users
 
-def get_users_by_role(db: Session, role: UserRole) -> List[User]:
-    users = db.query(User).filter(User.role == role).all()
-    logger.info(f"[{datetime.now().isoformat()}] Retrieved {len(users)} users with role {role}")
+def get_users_by_role(db: Session, role_name: str) -> List[User]:
+    users = db.query(User).options(joinedload(User.role)).join(Role).filter(Role.name.ilike(role_name)).all()
+    logger.info(f"[{datetime.now().isoformat()}] Retrieved {len(users)} users with role {role_name}")
     return users
 
 def get_admin_user(db: Session) -> Optional[User]:
-    admin_user = db.query(User).filter(User.role == UserRole.ADMIN).first()
+    admin_user = db.query(User).join(Role).filter(Role.name.ilike("admin")).first()
     if admin_user:
         logger.info(f"[{datetime.now().isoformat()}] Admin user found: {admin_user.email}")
     else:
@@ -180,3 +186,4 @@ def set_user_offline(db: Session, user_id: int) -> Optional[User]:
     
     logger.info(f"[{datetime.now().isoformat()}] User {user.email} ({user.uid}) is now OFFLINE (was: {old_status})")
     return user
+        

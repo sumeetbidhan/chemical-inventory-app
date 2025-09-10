@@ -128,4 +128,15 @@ def get_user_activity_logs(db: Session, user_id: int, limit: int = 50) -> List[A
 def get_recent_activity_logs(db: Session, limit: int = 20) -> List[ActivityLog]:
     return db.query(ActivityLog).order_by(
         ActivityLog.timestamp.desc()
-    ).limit(limit).all() 
+    ).limit(limit).all()
+
+def get_activity_logs_by_user(db: Session, user_id: int, limit: int = 50) -> List[ActivityLog]:
+    return db.query(ActivityLog).filter(ActivityLog.user_id == user_id).order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+
+def get_activity_logs_by_action(db: Session, action: str, limit: int = 50) -> List[ActivityLog]:
+    return db.query(ActivityLog).filter(ActivityLog.action == action).order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+
+def get_activity_logs_by_date_range(db: Session, start_date: datetime, end_date: datetime, limit: int = 50) -> List[ActivityLog]:
+    return db.query(ActivityLog).filter(
+        and_(ActivityLog.timestamp >= start_date, ActivityLog.timestamp <= end_date)
+    ).order_by(ActivityLog.timestamp.desc()).limit(limit).all()

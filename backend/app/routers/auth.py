@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud.user import get_user_by_uid, create_user, get_user_by_email, get_user_by_phone, get_admin_user
-from app.crud.invitation import get_invitation_by_email, accept_invitation
+from app.crud.user import get_user_by_uid, create_user, get_user_by_email, get_admin_user
 from app.crud.activity_log import create_activity_log
 from app.schema.user import UserLogin, UserLoginResponse, UserCreate
-from app.firebase_auth import verify_firebase_token, get_current_user
-from app.models.user import UserRole
+from app.firebase_auth import verify_firebase_token, get_current_user, get_firebase_token
+
 from app.services.otp_service import OTPService
 from typing import Optional
 from pydantic import BaseModel
@@ -72,13 +71,19 @@ async def login(
             else:
                 logger.info(f"[{datetime.now().isoformat()}] Creating new user registration for {email}")
                 
+                # Get the 'all_users' role ID
+                from app.models.role import Role
+                all_users_role = db.query(Role).filter(Role.name.ilike("all_users")).first()
+                if not all_users_role:
+                    raise HTTPException(status_code=500, detail="Default role not found")
+                
                 # Create user with default role (needs approval)
                 user_data = UserCreate(
                     uid=uid,
                     email=email,
                     first_name="",  # Will be updated later
-                    last_name=None,
-                    role=UserRole.ALL_USERS  # Default to ALL_USERS for security
+                    last_name="",
+                    role_id=all_users_role.id
                 )
                 user = create_user(db, user_data)
                 user.is_approved = False  # Needs admin approval
@@ -88,7 +93,7 @@ async def login(
                 create_activity_log(
                     db, user.id, "user_registered", 
                     f"New user registration: {email}",
-                    note=f"New user registration with role: {UserRole.ALL_USERS}, requires approval"
+                    note=f"New user registration with role: all_users, requires approval"
                 )
                 
                 logger.info(f"[{datetime.now().isoformat()}] New user registered: {email} (pending approval)")
@@ -178,48 +183,51 @@ async def get_current_user_info(
     return current_user
 
 @router.post("/register")
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+def register_user(
+    user: UserCreate, 
+    token: dict = Depends(get_firebase_token),
+    db: Session = Depends(get_db)
+):
     """Register a new user"""
     logger.info(f"[{datetime.now().isoformat()}] User registration attempt for {user.email}")
+    
+    # Verify that the Firebase token UID matches the user being registered
+    if token["uid"] != user.uid:
+        logger.warning(f"[{datetime.now().isoformat()}] Registration failed for {user.email}: UID mismatch")
+        raise HTTPException(status_code=400, detail="UID mismatch")
     
     # Validate first name is not empty
     if not user.first_name or not user.first_name.strip():
         logger.warning(f"[{datetime.now().isoformat()}] Registration failed for {user.email}: First name is required")
         raise HTTPException(status_code=400, detail="First name is required")
     
-    # Prevent multiple admins
-    if user.role == UserRole.ADMIN:
-        if get_admin_user(db):
-            logger.warning(f"[{datetime.now().isoformat()}] Registration failed for {user.email}: Admin already exists")
-            raise HTTPException(status_code=400, detail="Admin already exists")
+    # Get the 'all_users' role ID for new registrations
+    from app.models.role import Role
+    all_users_role = db.query(Role).filter(Role.name.ilike("all_users")).first()
+    if not all_users_role:
+        raise HTTPException(status_code=500, detail="Default role not found")
     
     # Prevent duplicate emails
     if get_user_by_email(db, user.email):
         logger.warning(f"[{datetime.now().isoformat()}] Registration failed for {user.email}: User already exists")
         raise HTTPException(status_code=400, detail="User already exists")
     
-    # Override role to ALL_USERS for new registrations (security measure)
-    user.role = UserRole.ALL_USERS
+    # Use the role_id sent by frontend (should be 5 for ALL_USERS)
+    # Validate that the role_id is valid
+    if user.role_id != all_users_role.id:
+        logger.warning(f"[{datetime.now().isoformat()}] Registration failed for {user.email}: Invalid role_id {user.role_id}")
+        raise HTTPException(status_code=400, detail="Invalid role for new registration")
     
-    # Create user as pending approval (except admin, who is auto-approved)
+    # Create user as pending approval
     db_user = create_user(db, user)
+    logger.info(f"[{datetime.now().isoformat()}] New user registered: {user.email} (pending approval)")
     
-    # Set approval status based on role
-    if user.role == UserRole.ADMIN:
-        db_user.is_approved = True
-        logger.info(f"[{datetime.now().isoformat()}] Admin user created: {user.email} (auto-approved)")
-    else:
-        db_user.is_approved = False  # New users need admin approval
-        logger.info(f"[{datetime.now().isoformat()}] New user registered: {user.email} (pending approval)")
-    
+    # Commit the user creation first
     db.commit()
+    db.refresh(db_user)
     
-    # Log activity
-    create_activity_log(
-        db, db_user.id, "user_registered", 
-        f"New user registration: {user.email} ({user.first_name} {user.last_name or ''})",
-        note=f"User registered with role: {user.role}, Approved: {db_user.is_approved}"
-    )
+    # Note: Activity logging removed to prevent database constraint violations
+    # Activity logs will be created when users perform actions after approval
     
     logger.info(f"[{datetime.now().isoformat()}] User registration successful: {user.email} ({user.first_name} {user.last_name or ''})")
     
@@ -231,7 +239,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
             "email": db_user.email,
             "first_name": db_user.first_name,
             "last_name": db_user.last_name,
-            "role": db_user.role,
+            "role_id": db_user.role_id,
             "is_approved": db_user.is_approved
         }
     }

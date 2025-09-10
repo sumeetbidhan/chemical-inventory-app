@@ -1,36 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import { X, Save, FlaskConical } from 'lucide-react';
 import styles from './ChemicalForm.module.scss';
-import { FlaskConical, Hash, Boxes, Bell, MapPin, User, FileText, Truck, ClipboardList } from 'lucide-react';
 
-export default function ChemicalForm({ chemical, onSubmit, onCancel, title }) {
+export default function ChemicalForm({ 
+  chemical = null, 
+  onSubmit, 
+  onCancel, 
+  title = "Chemical Form"
+}) {
   const [formData, setFormData] = useState({
     name: '',
-    quantity: 0,
-    unit: '',
-    formulation: '',
-    notes: '',
-    alert_threshold: '',
+    unit: 'g',
+    available_qty: '',
+    threshold_qty: '',
+    location: '',
     supplier: '',
-    location: ''
+    notes: ''
   });
   const [errors, setErrors] = useState({});
+
+  const units = [
+    { value: 'g', label: 'Grams (g)' },
+    { value: 'kg', label: 'Kilograms (kg)' },
+    { value: 'mg', label: 'Milligrams (mg)' },
+    { value: 'l', label: 'Liters (L)' },
+    { value: 'ml', label: 'Milliliters (mL)' },
+    { value: 'count', label: 'Count' }
+  ];
 
   useEffect(() => {
     if (chemical) {
       setFormData({
         name: chemical.name || '',
-        quantity: chemical.quantity || 0,
-        unit: chemical.unit || '',
-        formulation: chemical.formulation || '',
-        notes: chemical.notes || '',
-        alert_threshold: chemical.alert_threshold || '',
+        unit: chemical.unit || 'g',
+        available_qty: chemical.available_qty || '',
+        threshold_qty: chemical.threshold_qty || '',
+        location: chemical.location || '',
         supplier: chemical.supplier || '',
-        location: chemical.location || ''
+        notes: chemical.notes || ''
       });
     }
   }, [chemical]);
 
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -48,23 +60,23 @@ export default function ChemicalForm({ chemical, onSubmit, onCancel, title }) {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = 'Chemical name is required';
     }
-    
-    if (formData.quantity < 0) {
-      newErrors.quantity = 'Quantity must be non-negative';
-    }
-    
-    if (!formData.unit.trim()) {
+
+    if (!formData.unit) {
       newErrors.unit = 'Unit is required';
     }
-    
-    if (formData.alert_threshold !== '' && formData.alert_threshold < 0) {
-      newErrors.alert_threshold = 'Alert threshold must be non-negative';
+
+    if (formData.available_qty === '' || parseFloat(formData.available_qty) < 0) {
+      newErrors.available_qty = 'Available quantity must be a positive number';
     }
-    
+
+    if (formData.threshold_qty === '' || parseFloat(formData.threshold_qty) < 0) {
+      newErrors.threshold_qty = 'Threshold quantity must be a positive number';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -73,14 +85,11 @@ export default function ChemicalForm({ chemical, onSubmit, onCancel, title }) {
     e.preventDefault();
     
     if (validateForm()) {
-      // Convert quantity and alert_threshold to numbers, handle empty alert_threshold
-      const submitData = {
+      onSubmit({
         ...formData,
-        quantity: parseFloat(formData.quantity),
-        alert_threshold: formData.alert_threshold === '' ? null : parseFloat(formData.alert_threshold)
-      };
-      console.log('Submitting chemical data:', submitData);
-      onSubmit(submitData);
+        available_qty: parseFloat(formData.available_qty),
+        threshold_qty: parseFloat(formData.threshold_qty)
+      });
     }
   };
 
@@ -88,159 +97,126 @@ export default function ChemicalForm({ chemical, onSubmit, onCancel, title }) {
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <div className={styles.modalHeader}>
-          <h3>{title}</h3>
-          <button onClick={onCancel} className={styles.closeBtn}>
-            ×
+          <h3>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <FlaskConical size={20} />
+              {title}
+            </span>
+          </h3>
+          <button className={styles.closeBtn} onClick={onCancel}>
+            <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.sectionHeading}><FlaskConical size={18}/> Basic Info</div>
-          <div className={styles.formGroup}>
-            <label htmlFor="name">Chemical Name *</label>
-            <div className={styles.inputIconGroup}>
-              <FlaskConical className={styles.inputIcon} />
+          <div className={styles.formSection}>
+            <h4>Basic Information</h4>
+            
+            <div className={styles.formGroup}>
+              <label htmlFor="name">Chemical Name *</label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
-                onChange={handleChange}
-                className={errors.name ? styles.error + ' ' + styles.inputWithIcon : styles.inputWithIcon}
+                onChange={handleInputChange}
                 placeholder="Enter chemical name"
+                className={errors.name ? styles.inputError : ''}
               />
-            </div>
-            {errors.name && <span className={styles.errorText}>{errors.name}</span>}
-          </div>
-
-          <div className={styles.sectionHeading}><Boxes size={18}/> Stock & Alerts</div>
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label htmlFor="quantity">Quantity *</label>
-              <div className={styles.inputIconGroup}>
-                <Boxes className={styles.inputIcon} />
-                <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleChange}
-                  min="0"
-                  step="0.01"
-                  className={errors.quantity ? styles.error + ' ' + styles.inputWithIcon : styles.inputWithIcon}
-                  placeholder="0.00"
-                />
-              </div>
-              {errors.quantity && <span className={styles.errorText}>{errors.quantity}</span>}
+              {errors.name && <span className={styles.errorText}>{errors.name}</span>}
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="unit">Unit *</label>
-              <div className={styles.inputIconGroup}>
-                <Hash className={styles.inputIcon} />
-                <select
-                  id="unit"
-                  name="unit"
-                  value={formData.unit}
-                  onChange={handleChange}
-                  className={errors.unit ? styles.error + ' ' + styles.inputWithIcon : styles.inputWithIcon}
-                >
-                  <option value="">Select unit</option>
-                  <option value="g">Grams (g)</option>
-                  <option value="kg">Kilograms (kg)</option>
-                  <option value="mg">Milligrams (mg)</option>
-                  <option value="L">Liters (L)</option>
-                  <option value="mL">Milliliters (mL)</option>
-                  <option value="mol">Moles (mol)</option>
-                  <option value="mmol">Millimoles (mmol)</option>
-                  <option value="pieces">Pieces</option>
-                  <option value="bottles">Bottles</option>
-                  <option value="vials">Vials</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+              <select
+                id="unit"
+                name="unit"
+                value={formData.unit}
+                onChange={handleInputChange}
+                className={errors.unit ? styles.inputError : ''}
+              >
+                {units.map(unit => (
+                  <option key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </option>
+                ))}
+              </select>
               {errors.unit && <span className={styles.errorText}>{errors.unit}</span>}
             </div>
-          </div>
 
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label htmlFor="alert_threshold">Alert Threshold</label>
-              <div className={styles.inputIconGroup}>
-                <Bell className={styles.inputIcon} />
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="available_qty">Available Quantity *</label>
                 <input
                   type="number"
-                  id="alert_threshold"
-                  name="alert_threshold"
-                  value={formData.alert_threshold}
-                  onChange={handleChange}
-                  min="0"
+                  id="available_qty"
+                  name="available_qty"
+                  value={formData.available_qty}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
                   step="0.01"
-                  className={errors.alert_threshold ? styles.error + ' ' + styles.inputWithIcon : styles.inputWithIcon}
-                  placeholder="Enter threshold value"
+                  min="0"
+                  className={errors.available_qty ? styles.inputError : ''}
                 />
+                {errors.available_qty && <span className={styles.errorText}>{errors.available_qty}</span>}
               </div>
-              <small>Quantity at which low stock alerts are triggered (leave empty for no alerts)</small>
-              {errors.alert_threshold && <span className={styles.errorText}>{errors.alert_threshold}</span>}
-            </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="location">Storage Location</label>
-              <div className={styles.inputIconGroup}>
-                <MapPin className={styles.inputIcon} />
+              <div className={styles.formGroup}>
+                <label htmlFor="threshold_qty">Threshold Quantity *</label>
                 <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className={styles.inputWithIcon}
-                  placeholder="e.g., Lab A, Shelf 3"
+                  type="number"
+                  id="threshold_qty"
+                  name="threshold_qty"
+                  value={formData.threshold_qty}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className={errors.threshold_qty ? styles.inputError : ''}
                 />
+                {errors.threshold_qty && <span className={styles.errorText}>{errors.threshold_qty}</span>}
               </div>
             </div>
           </div>
 
-          <div className={styles.sectionHeading}><Truck size={18}/> Supplier Info</div>
-          <div className={styles.formGroup}>
-            <label htmlFor="supplier">Supplier</label>
-            <div className={styles.inputIconGroup}>
-              <Truck className={styles.inputIcon} />
+          <div className={styles.formSection}>
+            <h4>Additional Details</h4>
+            
+            <div className={styles.formGroup}>
+              <label htmlFor="location">Storage Location</label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="e.g., Storage A, Shelf B"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="supplier">Supplier</label>
               <input
                 type="text"
                 id="supplier"
                 name="supplier"
                 value={formData.supplier}
-                onChange={handleChange}
-                className={styles.inputWithIcon}
-                placeholder="Enter supplier name"
+                onChange={handleInputChange}
+                placeholder="Supplier name"
               />
             </div>
-          </div>
 
-          <div className={styles.sectionHeading}><ClipboardList size={18}/> Formulation & Notes</div>
-          <div className={styles.formGroup}>
-            <label htmlFor="formulation">Formulation</label>
-            <textarea
-              id="formulation"
-              name="formulation"
-              value={formData.formulation}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Enter formulation details..."
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label htmlFor="notes">Notes</label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Enter any additional notes..."
-            />
+            <div className={styles.formGroup}>
+              <label htmlFor="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Additional notes about the chemical..."
+                rows="3"
+              />
+            </div>
           </div>
 
           <div className={styles.formActions}>
@@ -248,7 +224,8 @@ export default function ChemicalForm({ chemical, onSubmit, onCancel, title }) {
               Cancel
             </button>
             <button type="submit" className={styles.submitBtn}>
-              <FlaskConical size={18}/> {chemical ? 'Update Chemical' : 'Create Chemical'}
+              <Save size={16} />
+              {chemical ? 'Update Chemical' : 'Add Chemical'}
             </button>
           </div>
         </form>

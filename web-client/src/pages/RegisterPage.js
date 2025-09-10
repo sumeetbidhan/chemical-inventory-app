@@ -12,31 +12,23 @@ const RegisterPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     
     // Validate first name
     if (!firstName.trim()) {
       setError('First name is required');
       return;
-    }
-    
-    // Validate phone number (basic validation)
-    if (phone.trim()) {
-      const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-      if (!phoneRegex.test(phone.trim())) {
-        setError('Please enter a valid phone number');
-        return;
-      }
     }
     
     if (password !== confirmPassword) {
@@ -57,9 +49,7 @@ const RegisterPage = () => {
         email: email,
         first_name: firstName.trim(),
         last_name: lastName.trim() || null,
-        phone: phone.trim() || null,
-        role: 'all_users', // Default role for new registrations - limited access
-        password: password // This will be ignored by backend but included for schema
+        role_id: 5 // ALL_USERS role ID for new registrations
       };
       
       const response = await fetch(`${API_BASE}/auth/register`, {
@@ -79,8 +69,15 @@ const RegisterPage = () => {
       const result = await response.json();
       console.log('Registration successful:', result);
       
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // Check if user is approved
+      if (result.is_approved) {
+        // User is approved, navigate to dashboard
+        navigate('/dashboard');
+      } else {
+        // User needs approval, show pending message
+        setSuccess('Registration successful! Your account is pending admin approval. You will be notified once approved.');
+        // Don't navigate, let user see the message
+      }
       
     } catch (err) {
       console.error('Registration error:', err);
@@ -136,15 +133,6 @@ const RegisterPage = () => {
           required
           placeholder="Enter your email address"
         />
-        <label htmlFor="phone">Phone Number</label>
-        <input
-          id="phone"
-          type="tel"
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          className={styles.input}
-          placeholder="Enter your phone number (optional, for OTP login)"
-        />
         <label htmlFor="password">Password *</label>
         <input
           id="password"
@@ -171,6 +159,7 @@ const RegisterPage = () => {
       </form>
       
       {error && <div className={styles.errorMsg}>{error}</div>}
+      {success && <div className={styles.successMsg}>{success}</div>}
       
       <div className={styles.loginLink}>
         <p>Already have an account? <button onClick={() => navigate('/')} className={styles.linkButton}>Login here</button></p>

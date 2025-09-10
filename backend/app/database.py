@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
@@ -41,6 +41,7 @@ def check_database_connection():
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
+            connection.commit()
         return True
     except Exception as e:
         print(f"Database connection failed: {e}")

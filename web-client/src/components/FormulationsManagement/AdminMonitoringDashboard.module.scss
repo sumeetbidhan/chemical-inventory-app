@@ -1,0 +1,451 @@
+.dashboard {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.headerLeft {
+  h2 {
+    margin: 0 0 8px 0;
+    color: #1f2937;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 16px;
+  }
+}
+
+.headerRight {
+  display: flex;
+  gap: 12px;
+}
+
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 24px;
+}
+
+.searchBox {
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filterBtn {
+  padding: 8px 16px;
+  border: 2px solid #d1d5db;
+  background: white;
+  color: #6b7280;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+  }
+
+  &.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+  }
+}
+
+.assignmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.assignmentCard {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  border: 2px solid transparent;
+
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: #e5e7eb;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.productInfo {
+  h3 {
+    margin: 0 0 8px 0;
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+.targetInfo {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusBadge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.active {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  &.completed {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  &.expired {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+.assignmentDetails {
+  margin-bottom: 20px;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detailLabel {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.detailValue {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.teamTypeBadge {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.progressSection {
+  margin-bottom: 20px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.componentsInfo {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.timerSection {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.timerInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.timerLabel {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.timerValue {
+  color: #1f2937;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+
+  &.expired {
+    color: #dc2626;
+  }
+}
+
+.componentsStatus {
+  margin-bottom: 20px;
+}
+
+.componentStatus {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.componentName {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.componentStatusIcon {
+  display: flex;
+  align-items: center;
+}
+
+.completedIcon {
+  color: #10b981;
+}
+
+.pendingIcon {
+  color: #ef4444;
+}
+
+.moreComponents {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.cardActions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.viewBtn, .extendBtn, .deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  justify-content: center;
+}
+
+.viewBtn {
+  background: #3b82f6;
+  color: white;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+}
+
+.extendBtn {
+  background: #f59e0b;
+  color: white;
+
+  &:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+  }
+}
+
+.deleteBtn {
+  background: #ef4444;
+  color: white;
+
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+  }
+}
+
+.noAssignments {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  color: #6b7280;
+}
+
+.noAssignmentsIcon {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.noAssignments h3 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 24px;
+}
+
+.noAssignments p {
+  margin: 0;
+  font-size: 16px;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .assignmentsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .assignmentCard {
+    padding: 16px;
+  }
+
+  .cardActions {
+    flex-direction: column;
+  }
+
+  .viewBtn,
+  .extendBtn,
+  .deleteBtn {
+    width: 100%;
+  }
+}
+

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import GradientText from '../components/GradientText';
 
 const TABS = ['Users', 'Lab Staff', 'Product Team', 'Account Team', 'Pending', 'Online Users', 'Logs'];
-const API_BASE = 'http://192.168.1.16:8000';
+const API_BASE = 'http://192.168.1.12:8000';
 
 export default function AdminDashboardScreen() {
   const { user, userInfo, logout, firebaseToken } = useAuth();

@@ -3,6 +3,9 @@ import styles from './DashboardPage.module.scss';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, AlertTriangle, Hand, FlaskConical, Users, DollarSign, Shield, Heart } from 'lucide-react';
+import LabDashboard from '../components/LabDashboard';
+import ProductDashboard from '../components/ProductDashboard';
+import AccountTeamDashboard from '../components/AccountTeamDashboard';
 
 const API_BASE = 'http://localhost:8000';
 
@@ -11,6 +14,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [showAppGuide, setShowAppGuide] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -164,10 +168,50 @@ const DashboardPage = () => {
     );
   }
 
+  // Check user role and show appropriate dashboard
+  const getUserDashboard = () => {
+    if (!userInfo) {
+      console.log('🔍 No userInfo available');
+      return null;
+    }
+    const role = userInfo.role?.name || userInfo.role;
+    
+    console.log('🔍 Dashboard Debug:', {
+      userInfo,
+      role,
+      roleName: userInfo.role?.name,
+      roleId: userInfo.role_id,
+      isLabStaff: role === 'LAB_STAFF' || role === 'lab_staff' || userInfo.role_id === 2,
+      isProductTeam: role === 'PRODUCT_TEAM' || role === 'product_team' || userInfo.role_id === 3,
+      isAccountTeam: role === 'ACCOUNT_TEAM' || role === 'account_team' || userInfo.role_id === 4
+    });
+    
+    // Check both role name and role_id
+    const isLabStaff = role === 'LAB' || role === 'lab' || role === 'LAB_STAFF' || role === 'lab_staff' || userInfo.role_id === 2;
+    const isProductTeam = role === 'PRODUCT' || role === 'product' || role === 'PRODUCT_TEAM' || role === 'product_team' || userInfo.role_id === 3;
+    const isAccountTeam = role === 'ACCOUNTS' || role === 'accounts' || role === 'ACCOUNT_TEAM' || role === 'account_team' || userInfo.role_id === 4;
+    
+    if (isLabStaff) {
+      return <LabDashboard />;
+    } else if (isProductTeam) {
+      return <ProductDashboard />;
+    } else if (isAccountTeam) {
+      return <AccountTeamDashboard />;
+    }
+    
+    return null;
+  };
+
+  // Show specific dashboard for team users
+  const teamDashboard = getUserDashboard();
+  if (teamDashboard) {
+    return teamDashboard;
+  }
+
   // Role-based dashboard content
   const renderDashboardContent = () => {
     if (!userInfo) return null;
-    const { role } = userInfo;
+    const role = userInfo.role?.name || userInfo.role;
     return (
       <>
         <div className={styles.quickAccessBox}>
@@ -177,7 +221,7 @@ const DashboardPage = () => {
               Chemical Inventory
             </span>
           </button>
-          {role === 'admin' && (
+          {role === 'admin' || role === 'ADMIN' && (
             <button className={styles.bigButton} onClick={() => navigate('/admin')}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
                 <Users size={24} />
@@ -203,7 +247,7 @@ const DashboardPage = () => {
             </span>
           </h4>
           <ul>
-            {role === 'admin' && [
+            {role === 'admin' || role === 'ADMIN' && [
               <li key="manage_users"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage users</span></li>,
               <li key="manage_invitations"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />Manage invitations</span></li>,
               <li key="view_logs"><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={16} color="var(--success-color)" />View logs</span></li>,
@@ -250,6 +294,16 @@ const DashboardPage = () => {
             Welcome, {userInfo?.first_name || user.email}
           </span>
         </h2>
+        <button 
+          className={styles.appGuideBtn}
+          onClick={() => setShowAppGuide(true)}
+          title="Learn how the app works"
+        >
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <Heart size={18} />
+            How the App Works
+          </span>
+        </button>
       </div>
       <div className={styles.userInfo}>
         <div>
@@ -266,7 +320,7 @@ const DashboardPage = () => {
         </div>
         <div>
           <strong>User Role</strong>
-          <span>{(userInfo?.role || 'Basic User').replace('_', ' ').toUpperCase()}</span>
+          <span>{((userInfo?.role?.name || userInfo?.role) || 'Basic User').replace('_', ' ').toUpperCase()}</span>
         </div>
         <div>
           <strong>Email Verified</strong>
@@ -283,6 +337,229 @@ const DashboardPage = () => {
       </div>
       
       {renderDashboardContent()}
+      
+      {/* How the App Works Modal */}
+      {showAppGuide && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.appGuideModal}>
+            <div className={styles.modalHeader}>
+              <h2>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px' }}>
+                  <Heart size={24} color="var(--accent-color)" />
+                  How the Chemical Inventory App Works
+                </span>
+              </h2>
+              <button 
+                className={styles.closeBtn}
+                onClick={() => setShowAppGuide(false)}
+                title="Close guide"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className={styles.modalContent}>
+              {/* OTP-based Formulation Viewer */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <FlaskConical size={20} color="var(--accent-color)" />
+                    OTP-based Formulation Viewer
+                  </span>
+                </h3>
+                <p>Our system uses One-Time Passwords (OTPs) to securely manage chemical formulations. Each formulation has a time-limited access period to ensure safety and accountability.</p>
+                <ul>
+                  <li><strong>Secure Access:</strong> Formulations are protected with time-limited OTPs</li>
+                  <li><strong>Safety First:</strong> Prevents unauthorized access to chemical recipes</li>
+                  <li><strong>Accountability:</strong> Tracks who accessed what and when</li>
+                </ul>
+              </section>
+
+              {/* Team Assignment Logic */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <Users size={20} color="var(--accent-color)" />
+                    Team Assignment Logic
+                  </span>
+                </h3>
+                <p>Chemical products are automatically assigned to teams based on quantity thresholds to optimize workflow efficiency.</p>
+                <div className={styles.assignmentLogic}>
+                  <div className={styles.assignmentRule}>
+                    <div className={styles.ruleIcon}>🧪</div>
+                    <div className={styles.ruleContent}>
+                      <strong>Lab Staff Assignment:</strong>
+                      <span>Chemical products with quantity &lt; 2kg</span>
+                      <small>Small quantities are handled by lab technicians for precise measurements</small>
+                    </div>
+                  </div>
+                  <div className={styles.assignmentRule}>
+                    <div className={styles.ruleIcon}>🏭</div>
+                    <div className={styles.ruleContent}>
+                      <strong>Product Team Assignment:</strong>
+                      <span>Chemical products with quantity ≥ 2kg</span>
+                      <small>Larger quantities are managed by product specialists for bulk operations</small>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Accounts Team Workflow */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <DollarSign size={20} color="var(--accent-color)" />
+                    Accounts Team Workflow
+                  </span>
+                </h3>
+                <p>The Accounts team manages all financial transactions and purchase orders for chemical procurement.</p>
+                <div className={styles.workflowSteps}>
+                  <div className={styles.workflowStep}>
+                    <div className={styles.stepNumber}>1</div>
+                    <div className={styles.stepContent}>
+                      <strong>Admin Request:</strong> Administrators request purchase of chemicals
+                    </div>
+                  </div>
+                  <div className={styles.workflowStep}>
+                    <div className={styles.stepNumber}>2</div>
+                    <div className={styles.stepContent}>
+                      <strong>Purchase Execution:</strong> Accounts team buys chemicals from suppliers
+                    </div>
+                  </div>
+                  <div className={styles.workflowStep}>
+                    <div className={styles.stepNumber}>3</div>
+                    <div className={styles.stepContent}>
+                      <strong>Stock Update:</strong> Inventory is automatically updated upon receipt
+                    </div>
+                  </div>
+                  <div className={styles.workflowStep}>
+                    <div className={styles.stepNumber}>4</div>
+                    <div className={styles.stepContent}>
+                      <strong>History Tracking:</strong> Purchase history is visible in Stock Management
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Alerts System */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertTriangle size={20} color="var(--warning-color)" />
+                    Alert System
+                  </span>
+                </h3>
+                <p>Our intelligent alert system keeps you informed about critical situations that require attention.</p>
+                <div className={styles.alertTypes}>
+                  <div className={styles.alertType}>
+                    <div className={styles.alertIcon}>⚠️</div>
+                    <div className={styles.alertContent}>
+                      <strong>Low Stock Alerts:</strong>
+                      <span>Notifications when chemical quantities fall below safety thresholds</span>
+                    </div>
+                  </div>
+                  <div className={styles.alertType}>
+                    <div className={styles.alertIcon}>⏰</div>
+                    <div className={styles.alertContent}>
+                      <strong>OTP Expiration Alerts:</strong>
+                      <span>Shows which chemical product's OTP has expired</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Formulation Tracking */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={20} color="var(--success-color)" />
+                    Formulation Tracking
+                  </span>
+                </h3>
+                <p>Every formulation is carefully tracked with predefined proportions and real-time progress monitoring.</p>
+                <div className={styles.trackingFeatures}>
+                  <div className={styles.trackingFeature}>
+                    <strong>Predefined Proportions:</strong>
+                    <span>Each formulation has exact chemical ratios and quantities</span>
+                  </div>
+                  <div className={styles.trackingFeature}>
+                    <strong>Scalable Quantities:</strong>
+                    <span>Formulations can be scaled to required batch sizes</span>
+                  </div>
+                  <div className={styles.trackingFeature}>
+                    <strong>Live Progress Tracking:</strong>
+                    <span>Admin can monitor real-time progress with visual indicators</span>
+                  </div>
+                </div>
+                
+                <div className={styles.progressIndicators}>
+                  <h4>Progress Indicators:</h4>
+                  <div className={styles.indicatorExamples}>
+                    <div className={styles.indicator}>
+                      <span className={styles.indicatorIcon}>✅</span>
+                      <span><strong>Green Tick:</strong> Chemical component completed</span>
+                    </div>
+                    <div className={styles.indicator}>
+                      <span className={styles.indicatorIcon}>❌</span>
+                      <span><strong>Red Cross:</strong> Chemical component pending</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.otpExtensions}>
+                  <h4>OTP Extension Requests:</h4>
+                  <p>Teams can request OTP extensions if they can't finish formulations within the allocated time, ensuring flexibility while maintaining security.</p>
+                </div>
+              </section>
+
+              {/* System Benefits */}
+              <section className={styles.guideSection}>
+                <h3>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <Shield size={20} color="var(--success-color)" />
+                    System Benefits
+                  </span>
+                </h3>
+                <div className={styles.benefitsGrid}>
+                  <div className={styles.benefit}>
+                    <strong>🔒 Enhanced Security</strong>
+                    <span>OTP-based access control prevents unauthorized formulation access</span>
+                  </div>
+                  <div className={styles.benefit}>
+                    <strong>⚡ Efficient Workflow</strong>
+                    <span>Automatic team assignments optimize resource utilization</span>
+                  </div>
+                  <div className={styles.benefit}>
+                    <strong>📊 Real-time Monitoring</strong>
+                    <span>Live progress tracking ensures transparency and accountability</span>
+                  </div>
+                  <div className={styles.benefit}>
+                    <strong>🚨 Proactive Alerts</strong>
+                    <span>Intelligent notifications prevent stockouts and OTP issues</span>
+                  </div>
+                  <div className={styles.benefit}>
+                    <strong>💰 Cost Control</strong>
+                    <span>Centralized purchase management and financial tracking</span>
+                  </div>
+                  <div className={styles.benefit}>
+                    <strong>📈 Scalability</strong>
+                    <span>Flexible formulation scaling for different batch requirements</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+            
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.modalBtnPrimary}
+                onClick={() => setShowAppGuide(false)}
+              >
+                Got it! I understand how the app works
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

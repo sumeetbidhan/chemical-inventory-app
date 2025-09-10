@@ -8,10 +8,10 @@ from app.crud.user import (
 from app.crud.activity_log import (
     get_activity_logs, update_activity_log_note, get_activity_log_by_id, get_activity_logs_with_user_info
 )
-from app.schema.user import UserUpdate, UserResponse
+from app.schema.user import UserUpdate, UserResponse, UserWithRoleResponse
 from app.schema.activity_log import ActivityLogFilter, ActivityLogListResponse, ActivityLogNote
 from app.firebase_auth import get_admin_user
-from app.models.user import UserRole
+
 from typing import List, Optional
 import firebase_admin
 from firebase_admin import auth
@@ -120,21 +120,42 @@ async def delete_user_admin(
         "firebase_deleted": firebase_deleted
     }
 
-@router.get("/users", response_model=List[UserResponse])
+@router.get("/users", response_model=List[UserWithRoleResponse])
 async def get_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    role: Optional[UserRole] = Query(None),
+    role: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     admin_user = Depends(get_admin_user)
 ):
-    """Get all users (Admin only)"""
+    """Get all users with role information (Admin only)"""
     if role:
         users = get_users_by_role(db, role)
     else:
         users = get_all_users(db, skip=skip, limit=limit)
     
-    return users
+    # Convert to UserWithRoleResponse format
+    users_with_roles = []
+    for user in users:
+        role_name = user.role.name if user.role else "Unknown"
+        print(f"DEBUG: User {user.email} has role_id {user.role_id}, role_name: {role_name}")
+        
+        user_dict = {
+            "id": user.id,
+            "uid": user.uid,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "role_id": user.role_id,
+            "is_approved": user.is_approved,
+            "created_at": user.created_at,
+            "last_seen": user.last_seen,
+            "role_name": role_name
+        }
+        users_with_roles.append(user_dict)
+    
+    print(f"DEBUG: Returning {len(users_with_roles)} users with roles")
+    return users_with_roles
 
 @router.get("/pending-users", response_model=List[UserResponse])
 async def get_pending_users_admin(
